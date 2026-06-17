@@ -16,6 +16,7 @@ ACCENT_DEF = "#00ffcc"    # Turquesa neón
 ACCENT_ATK = "#ff3e3e"    # Rojo neón
 TXT_COLOR = "#ffffff"     
 COLOR_BASE = "#ffd700"    
+ACCENT_HAB = "#8b5cf6"    # Morado neón para habilidades
 
 
 class VentanaLogin:
@@ -154,8 +155,8 @@ class Ventana_facciones:
         self.jugador2 = jugador2
         self.callback_inicio = callback_inicio 
 
-        self.faccion_defensor = tk.StringVar(value="")
-        self.faccion_atacante = tk.StringVar(value="")
+        self.faccion_defensor = tk.StringVar(value="hola Gabo")
+        self.faccion_atacante = tk.StringVar(value="hola Gabo")
 
         self.crear_widgets()
 
@@ -208,7 +209,7 @@ class Ventana_facciones:
 class JuegoApp:
     def __init__(self, root, faccion_defensor, faccion_atacante):
         self.root = root
-        self.root.title("Base Assault: Cyber Evolution - 2026")
+        self.root.title("Base Assault")
         self.root.geometry("1150x720")
         self.root.configure(bg=BG_MAIN)
         
@@ -300,7 +301,6 @@ class JuegoApp:
             except Exception as e:
                 print(f"❌ Error al cargar la imagen de la base: {e}")
 
-
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${self.defensor_mgr.dinero}", fg=ACCENT_DEF)
@@ -346,8 +346,6 @@ class JuegoApp:
         self.canvas_mapa.bind("<Button-1>", self.click_en_mapa)
         self.dibujar_escenario()
 
-        
-
     def dibujar_escenario(self):
         self.canvas_mapa.delete("all")
         
@@ -357,7 +355,6 @@ class JuegoApp:
         
         # --- BASE CENTRAL ---
         bx, by = self.base_central_pos
-        pad = 6
         cx = bx * self.celda_size + (self.celda_size // 2)
         cy = by * self.celda_size + (self.celda_size // 2)
         
@@ -428,6 +425,14 @@ class JuegoApp:
         elif self.fase_actual == "COMBATE":
             self.lbl_seccion.config(text="⚔️ EN BATALLA...", fg="#ffaa00")
             self.btn_fase.config(text="SIMULANDO... ⏳", bg="#44444a", fg="#aaaaaa", state="disabled")
+            
+            # --- AGREGADO: BOTÓN DE ACTIVACIÓN DE HABILIDADES DURANTE COMBATE ---
+            btn_habilidades = tk.Button(
+                self.contenedor_botones, text="⚡ HABILIDADES ESPECIALES ⚡", 
+                bg=ACCENT_HAB, fg="#ffffff", font=("Segoe UI", 11, "bold"), 
+                relief="flat", pady=12, command=self.activar_habilidades_atacante
+            )
+            btn_habilidades.pack(fill="x", pady=20)
 
     def seleccionar_objeto(self, clase):
         self.clase_seleccionada = clase
@@ -468,6 +473,17 @@ class JuegoApp:
             self.cooldown_ataque_torres = 0 
             self.ejecutar_game_loop()
 
+    # --- AGREGADO: NUEVA FUNCIÓN PARA DISPARAR LAS HABILIDADES EN EL LOOP ---
+    def activar_habilidades_atacante(self):
+        """Recorre las unidades en batalla y ejecuta sus comportamientos especiales."""
+        if not self.atacante_mgr.unidades_vivas:
+            return
+
+        for unidad in self.atacante_mgr.unidades_vivas:
+            unidad.usar_habilidad()
+            
+        print("⚡ ¡Sistemas de combate al límite! Habilidades del atacante desplegadas.")
+
     def ejecutar_game_loop(self):
         if self.fase_actual != "COMBATE": return
 
@@ -484,7 +500,7 @@ class JuegoApp:
             distancia = math.hypot(dx, dy)
 
             if distancia <= 35:
-                self.vida_base -= (unidad.danio * 0.03)
+                self.vida_base -= (unidad.daño * 0.03)
                 if self.vida_base < 0: self.vida_base = 0
             else:
                 velocidad_frames = (getattr(unidad, 'velocidad', 1) * 1.8)
@@ -513,7 +529,7 @@ class JuegoApp:
                         dist_min = d
 
                 if objetivo:
-                    objetivo.vida_actual -= torre.danio
+                    objetivo.vida_actual -= torre.daño
                     
                     if isinstance(torre, TorreMagica):
                         self.efectos_visuales.append({"tipo": "rayo", "coords": (tx, ty, objetivo.px, objetivo.py)})
