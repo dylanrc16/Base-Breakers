@@ -17,7 +17,7 @@ class Unidad:
         self.y = y
         self.faccion_visual = faccion_visual
 
-    def recibir_danio(self, cantidad):
+    def recibir_daño(self, cantidad):
         self.vida_actual -= cantidad
         if self.vida_actual < 0:
             self.vida_actual = 0
