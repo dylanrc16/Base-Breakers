@@ -98,3 +98,17 @@ class DefensorManager:
             self.defensas_colocadas.append(torre_temporal)
             return torre_temporal
         return None
+    
+    def comprar_muro(self, x, y, faccion):
+        """
+        compra un muro, sigue la misma lógica
+        que las torres
+        """
+        muro_nuevo = Muros(x, y, faccion)
+
+        if self.dinero >= muro_nuevo.costo:
+            self.dinero -= muro_nuevo.costo
+            self.defensas_colocadas.append(muro_nuevo)
+            return muro_nuevo
+        return None
+    
