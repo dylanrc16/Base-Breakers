@@ -235,6 +235,7 @@ class JuegoApp:
         self.faccion_defensor = faccion_defensor
         self.faccion_atacante = faccion_atacante
         self.faccion_seleccionada = faccion_defensor  # Arranca controlando el defensor
+        self.img_base_central = None
 
         self.assets_imagenes = {}
         # Cargamos explícitamente la facción que arranca construyendo
@@ -282,6 +283,24 @@ class JuegoApp:
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
 
+        # --- AGREGADO: Cargar la imagen de la base central ---
+        if self.img_base_central is None: # Para cargarla solo una vez
+            ruta_base = os.path.join("assets", "Base.png")
+            try:
+                if os.path.exists(ruta_base):
+                    # Cargamos la imagen original
+                    img_grande = tk.PhotoImage(file=ruta_base)
+                    
+                    # TRUCO: Si la imagen mide por ejemplo 550x550, la dividimos entre 10 
+                    # para que quede de 55x55 píxeles. Ajustá el número según qué tan grande sea.
+                    self.img_base_central = img_grande.subsample(10, 10) 
+                    print(f"✅ Asset de Base Central cargado y reescalado: {ruta_base}")
+                else:
+                    print(f"⚠️ No se encontró la imagen de la base en: {ruta_base}. Se usará el rectángulo de respaldo.")
+            except Exception as e:
+                print(f"❌ Error al cargar la imagen de la base: {e}")
+
+
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${self.defensor_mgr.dinero}", fg=ACCENT_DEF)
@@ -327,6 +346,8 @@ class JuegoApp:
         self.canvas_mapa.bind("<Button-1>", self.click_en_mapa)
         self.dibujar_escenario()
 
+        
+
     def dibujar_escenario(self):
         self.canvas_mapa.delete("all")
         
@@ -334,14 +355,17 @@ class JuegoApp:
             self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#24242b")
             self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#24242b")
         
+        # --- BASE CENTRAL ---
         bx, by = self.base_central_pos
         pad = 6
         cx = bx * self.celda_size + (self.celda_size // 2)
         cy = by * self.celda_size + (self.celda_size // 2)
         
-        color_actual_base = COLOR_BASE if self.vida_base > 0 else "#555555"
-        self.canvas_mapa.create_rectangle(bx*self.celda_size+pad, by*self.celda_size+pad, (bx+1)*self.celda_size-pad, (by+1)*self.celda_size-pad, fill=color_actual_base, outline="#b8860b", width=2)
-        self.canvas_mapa.create_text(cx, cy, text=f"👑\nBASE\n{int(self.vida_base)}HP", fill="#000000", font=("Segoe UI", 8, "bold"), justify="center")
+        # Si la imagen existe y la base sigue viva, la dibujamos
+        if self.vida_base > 0:
+            self.canvas_mapa.create_image(cx, cy, image=self.img_base_central)
+            # Le dejamos un pequeño texto abajo o encima con la vida para que el usuario sepa cuánto le queda
+            self.canvas_mapa.create_text(cx, cy + 20, text=f"{int(self.vida_base)} HP", fill="#ffffff", font=("Segoe UI", 8, "bold"))
 
         for torre in self.defensor_mgr.defensas_colocadas:
             tx = torre.x * self.celda_size + (self.celda_size // 2)
