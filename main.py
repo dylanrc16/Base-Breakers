@@ -583,10 +583,14 @@ class JuegoApp:
         self.defensor_mgr.defensas_colocadas = []
         self.atacante_mgr.unidades_vivas = []
         self.efectos_visuales = []
-        self.defensor_mgr.dinero += 400 
-        self.atacante_mgr.dinero += 400
-        self.fase_actual = "CONSTRUCCION"
+
+        #bono de dinero dependiendo de rendimiento en la ronda
+        oro_base = 500 
+        self.defensor_mgr.dinero = oro_base + (150 if self.vida_base > 0 else 0) #bono al defensor si defendió
+        self.atacante_mgr.dinero = oro_base + (150 if self.vida_base <= 0 else 0) #bono al atacante si destruyó la base
         
+        self.fase_actual = "CONSTRUCCION"
+
         # Volvemos a setear la facción del defensor para la nueva fase de construcción
         self.seleccionar_faccion(self.faccion_defensor)
         
