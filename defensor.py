@@ -2,12 +2,12 @@
 
 class Defensa:
     """Clase Padre para todas las estructuras defensivas."""
-    def __init__(self, nombre, costo, vida, danio, alcance, habilidad, turnos_habilidad, x, y, faccion_visual):
+    def __init__(self, nombre, costo, vida, daño, alcance, habilidad, turnos_habilidad, x, y, faccion_visual):
         self.nombre = nombre
         self.costo = costo
         self.vida_maxima = vida
         self.vida_actual = vida
-        self.danio = danio
+        self.daño = daño
         self.alcance = alcance
         self.habilidad = habilidad
         self.turnos_habilidad = turnos_habilidad
@@ -16,7 +16,7 @@ class Defensa:
         self.y = y
         self.faccion_visual = faccion_visual
 
-    def recibir_danio(self, cantidad):
+    def recibir_daño(self, cantidad):
         self.vida_actual -= cantidad
         if self.vida_actual < 0:
             self.vida_actual = 0
@@ -35,16 +35,12 @@ class TorreBasica(Defensa):
 
         # Daño normal y costo bajo
         super().__init__(
-            nombre="Torre Básica", costo=100, vida=300, danio=25, alcance=2,
+            nombre="Torre Básica", costo=100, vida=300, daño=25, alcance=2,
             habilidad="Disparo Doble", turnos_habilidad=2, 
             
             x=x, y=y, faccion_visual=faccion_visual
         )
 
-    def usar_habilidad(self, objetivos):
-        """Lógica específica de la habilidad Disparo Doble."""
-        print(f"¡{self.nombre} activa {self.habilidad}!")
-        # Aquí programás que ataque a dos objetivos en su alcance
 
 
 class TorrePesada(Defensa):
@@ -53,14 +49,11 @@ class TorrePesada(Defensa):
         self.tipo_imagen = "Mortero"
         # Mucha vida y daño alto, pero costo elevado
         super().__init__(
-            nombre="Torre Pesada", costo=250, vida=600, danio=60, alcance=3,
+            nombre="Torre Pesada", costo=250, vida=600, daño=60, alcance=3,
             habilidad="Daño en Área", turnos_habilidad=4, 
             x=x, y=y, faccion_visual=faccion_visual
         )
 
-    def usar_habilidad(self, objetivos):
-        """Lógica específica de Daño en Área."""
-        print(f"¡{self.nombre} activa {self.habilidad}!")
 
 
 class TorreMagica(Defensa):
@@ -69,15 +62,12 @@ class TorreMagica(Defensa):
         self.tipo_imagen = "Ballesta"
         # Daño bajo, pero habilidad especial fuerte
         super().__init__(
-            nombre="Torre Mágica", costo=200, vida=250, danio=15, alcance=4,
+            nombre="Torre Mágica", costo=200, vida=250, daño=15, alcance=4,
             habilidad="Congelar", turnos_habilidad=3, 
             x=x, y=y, faccion_visual=faccion_visual
         )
 
-    def usar_habilidad(self, objetivo):
-        """Lógica específica para Congelar una unidad."""
-        print(f"¡{self.nombre} activa {self.habilidad}!")
-
+   
 
 # --- MANAGER DEL DEFENSOR ---
 
