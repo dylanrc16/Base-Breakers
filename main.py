@@ -346,6 +346,7 @@ class JuegoApp:
         self.canvas_mapa.bind("<Button-1>", self.click_en_mapa)
         self.dibujar_escenario()
 
+
     def dibujar_escenario(self):
         self.canvas_mapa.delete("all")
         
@@ -371,12 +372,25 @@ class JuegoApp:
             fac = self.faccion_defensor
             tipo_t = getattr(torre, 'tipo_imagen', 'Torre')
             
+            #intenta dibujar el sprite desde la carpeta assets
             if fac in self.assets_imagenes and tipo_t in self.assets_imagenes[fac]:
                 self.canvas_mapa.create_image(tx, ty, image=self.assets_imagenes[fac][tipo_t])
             else:
-                self.canvas_mapa.create_oval(tx-20, ty-20, tx+20, ty+20, fill=BG_PANEL, outline=ACCENT_DEF, width=2)
-                emoji = "🏹" if isinstance(torre, TorreBasica) else "💥" if isinstance(torre, TorrePesada) else "🔮"
-                self.canvas_mapa.create_text(tx, ty, text=emoji, fill="#ffffff", font=("Arial", 14))
+                #si no hay imagen, busca crear el objeto 
+                if tipo_t == "Muro":
+                    #Si es un muro se dibuja un bloque gris
+                    x_izq = torre.x * self.celda_size + 4
+                    y_sup = torre.y * self.celda_size + 4
+                    x_der = (torre.x + 1) * self.celda_size - 4
+                    y_inf = (torre.y + 1) * self.celda_size - 4
+
+                    self.canvas_mapa.create_rectangle(x_izq, y_sup, x_der, y_inf, fill= "#5a5a66", outline= "#8a8a98", width= 2)
+                    self.canvas_mapa.create_text(tx, ty, text="🧱", fill="#ffffff", font=("Arial", 12)) 
+
+                else:
+                    self.canvas_mapa.create_oval(tx-20, ty-20, tx+20, ty+20, fill=BG_PANEL, outline=ACCENT_DEF, width=2)
+                    emoji = "🏹" if isinstance(torre, TorreBasica) else "💥" if isinstance(torre, TorrePesada) else "🔮"
+                    self.canvas_mapa.create_text(tx, ty, text=emoji, fill="#ffffff", font=("Arial", 14))
 
         for unidad in self.atacante_mgr.unidades_vivas:
             ux, uy = unidad.px, unidad.py
@@ -411,10 +425,18 @@ class JuegoApp:
         if self.fase_actual == "CONSTRUCCION":
             self.lbl_seccion.config(text="🛡️ DEFENSAS DISPONIBLES", fg=ACCENT_DEF)
             self.btn_fase.config(text="FINALIZAR CONSTRUCCIÓN ➡️", bg="#00ffd0", fg="#000000")
-            opciones = [("Torre Básica ($100)", TorreBasica), ("Torre Pesada ($250)", TorrePesada), ("Torre Mágica ($200)", TorreMagica)]
+
+
+            opciones = [("Torre Básica ($100)", TorreBasica),
+                        ("Torre Pesada ($250)", TorrePesada),
+                        ("Torre Mágica ($200)", TorreMagica),
+                        ("Muros ($50)", Muros)]
+
+
             for texto, clase in opciones:
                 btn = tk.Button(self.contenedor_botones, text=texto, bg="#22222b", fg=ACCENT_DEF, font=("Segoe UI", 10, "bold"), relief="flat", pady=8, command=lambda c=clase: self.seleccionar_objeto(c))
                 btn.pack(fill="x", pady=6)
+
         elif self.fase_actual == "ATAQUE":
             self.lbl_seccion.config(text="⚔️ RECRUTAR ATACANTES", fg=ACCENT_ATK)
             self.btn_fase.config(text="INICIAR COMBATE 🔥", bg="#dc3545", fg="#ffffff")
