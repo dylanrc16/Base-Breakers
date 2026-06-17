@@ -67,7 +67,16 @@ class TorreMagica(Defensa):
             x=x, y=y, faccion_visual=faccion_visual
         )
 
-   
+class Muros(Defensa):
+    def __init__(self, x, y, faccion_visual):
+        self.tipo_imagen = "Muro" #facilita la busqueda de la imagen
+
+        super().__init__(
+            nombre= "Muro Defensivo", costo= 50, vida= 400, daño= 0, alcance= 0,
+            habilidad= "", turnos_habilidad= 0, x=x, y=y, faccion_visual= faccion_visual
+        )
+
+
 
 # --- MANAGER DEL DEFENSOR ---
 
