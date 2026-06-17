@@ -277,7 +277,7 @@ class JuegoApp:
         for fac in self.facciones_disponibles:
             for tipo in tipos_torres:
                 nombre_archivo = f"{tipo} {fac}.png"
-                ruta_completa = os.path.join("assets", nombre_archivo)
+                ruta_completa = os.path.join("assets","assets de defensa", nombre_archivo)
                 
                 try:
                     # Intento 1: Tal cual está formateado (Ej: "Torre Nordica.png")
