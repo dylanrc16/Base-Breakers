@@ -256,11 +256,11 @@ class JuegoApp:
             print("Esa facción no existe.")
 
     def cargar_assets_imagenes(self):
-        """Carga los archivos de la facción actual seleccionada."""
+        """Carga los archivos de la facción actual seleccionada incluyendo muros."""
         if not self.faccion_seleccionada:
             return
 
-        tipos_defensas = ["Torre", "Mortero", "Ballesta", "Muro" ]
+        tipos_defensas = ["Torre", "Mortero", "Ballesta", "Muro"]
         faccion = self.faccion_seleccionada
         self.assets_imagenes[faccion] = {}
 
@@ -270,34 +270,40 @@ class JuegoApp:
                 
             try:
                 if os.path.exists(ruta_completa):
-                    self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_completa)
+                    img_original = tk.PhotoImage(file=ruta_completa)
+                    
+                    # === TRUCO DE REESCALADO PARA EL MURO ===
+                    if tipo == "Muro":
+                        # Modifica estos números si lo quieres aún más pequeño (ej: 3, 3 o 4, 4)
+                        self.assets_imagenes[faccion][tipo] = img_original.subsample(2, 2)
+                    else:
+                        self.assets_imagenes[faccion][tipo] = img_original
+                        
                     print(f"✅ Asset cargado: {ruta_completa}")
                 else:
-                    # Fallback minúsculas corregido
+                    # Fallback minúsculas
                     nombre_minuscula = f"{tipo.lower()} {faccion.lower()}.png"
                     ruta_minuscula = os.path.join("assets", "assets de defensa", nombre_minuscula)
                     if os.path.exists(ruta_minuscula):
-                        self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_minuscula)
+                        img_original = tk.PhotoImage(file=ruta_minuscula)
+                        if tipo == "Muro":
+                            self.assets_imagenes[faccion][tipo] = img_original.subsample(2, 2)
+                        else:
+                            self.assets_imagenes[faccion][tipo] = img_original
                         print(f"✅ Asset cargado (fallback): {ruta_minuscula}")
                     else:
                         print(f"⚠️ Archivo no encontrado: {ruta_completa}")
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
 
-        #carga de imagen de la base central
-        if self.img_base_central is None: # Para cargarla solo una vez
+        # --- Cargar la imagen de la base central ---
+        if self.img_base_central is None: 
             ruta_base = os.path.join("assets", "Base.png")
             try:
                 if os.path.exists(ruta_base):
-                    # Cargamos la imagen original
                     img_grande = tk.PhotoImage(file=ruta_base)
-                    
-                    # TRUCO: Si la imagen mide por ejemplo 550x550, la dividimos entre 10 
-                    # para que quede de 55x55 píxeles. Ajustá el número según qué tan grande sea.
                     self.img_base_central = img_grande.subsample(10, 10) 
-                    print(f"✅ Asset de Base Central cargado y reescalado: {ruta_base}")
-                else:
-                    print(f"⚠️ No se encontró la imagen de la base en: {ruta_base}. Se usará el rectángulo de respaldo.")
+                    print(f"✅ Asset de Base Central cargado y reescalado")
             except Exception as e:
                 print(f"❌ Error al cargar la imagen de la base: {e}")
 
@@ -515,21 +521,76 @@ class JuegoApp:
 
         self.efectos_visuales = []
 
-        # 1. MOVIMIENTO CONTINUO
+        # 1. MOVIMIENTO Y ATAQUE CONTINUO (UNIDADES VS DEFENSAS)
         for unidad in self.atacante_mgr.unidades_vivas:
             dx = base_px - unidad.px
             dy = base_py - unidad.py
             distancia = math.hypot(dx, dy)
 
+            # --- PRIORIDAD 1: ATAQUE A LA BASE CENTRAL ---
             if distancia <= 35:
                 self.vida_base -= (unidad.daño * 0.03)
                 if self.vida_base < 0: self.vida_base = 0
+                
             else:
+                # Calcular predicción de movimiento para este frame
                 velocidad_frames = (getattr(unidad, 'velocidad', 1) * 1.8)
-                unidad.px += (dx / distancia) * velocidad_frames
-                unidad.py += (dy / distancia) * velocidad_frames
-                unidad.x = int(unidad.px // self.celda_size)
-                unidad.y = int(unidad.py // self.celda_size)
+                siguiente_px = unidad.px + (dx / distancia) * velocidad_frames
+                siguiente_py = unidad.py + (dy / distancia) * velocidad_frames
+                
+                celda_futura_x = int(siguiente_px // self.celda_size)
+                celda_futura_y = int(siguiente_py // self.celda_size)
+                
+                # --- PRIORIDAD 2: DETECTAR SI UN MURO BLOQUEA EL PASO EN LA CELDA ---
+                muro_bloqueador = None
+                for defensa in self.defensor_mgr.defensas_colocadas:
+                    if defensa.x == celda_futura_x and defensa.y == celda_futura_y:
+                        if "Muro" in defensa.nombre:
+                            muro_bloqueador = defensa
+                            break
+                
+                if muro_bloqueador:
+                    # Frena y le da con todo al muro
+                    muro_bloqueador.vida_actual -= (unidad.daño * 0.03)
+                    if random.random() < 0.08:
+                        mx = muro_bloqueador.x * self.celda_size + (self.celda_size // 2)
+                        my = muro_bloqueador.y * self.celda_size + (self.celda_size // 2)
+                        self.efectos_visuales.append({"tipo": "proyectil", "coords": (unidad.px, unidad.py, mx, my)})
+                        
+                else:
+                    # --- PRIORIDAD 3: CONTRAATAQUE A TORRES CERCANAS ---
+                    # Si no hay muro estorbando, revisamos si hay una torre al alcance de los puños/armas de la unidad
+                    torre_al_alcance = None
+                    dist_min_torre = 60 # Rango de ataque cuerpo a cuerpo/corto de la unidad en píxeles
+                    
+                    for defensa in self.defensor_mgr.defensas_colocadas:
+                        if "Muro" not in defensa.nombre: # Solo nos interesa golpear estructuras de ataque
+                            tx = defensa.x * self.celda_size + (self.celda_size // 2)
+                            ty = defensa.y * self.celda_size + (self.celda_size // 2)
+                            dist_a_torre = math.hypot(tx - unidad.px, ty - unidad.py)
+                            
+                            if dist_a_torre <= dist_min_torre:
+                                torre_al_alcance = defensa
+                                break # Encontró una torre objetivo cercana
+                    
+                    if torre_al_alcance:
+                        # La unidad se detiene temporalmente a dañar la torre defensiva
+                        torre_al_alcance.vida_actual -= (unidad.daño * 0.03)
+                        
+                        # Efecto visual de chispazos o golpes del atacante hacia la torre
+                        if random.random() < 0.1:
+                            tx = torre_al_alcance.x * self.celda_size + (self.celda_size // 2)
+                            ty = torre_al_alcance.y * self.celda_size + (self.celda_size // 2)
+                            self.efectos_visuales.append({
+                                "tipo": "rayo" if isinstance(unidad, UnidadRapida) else "proyectil", 
+                                "coords": (unidad.px, unidad.py, tx, ty)
+                            })
+                    else:
+                        # CAMINO TOTALMENTE LIBRE: Avanza fluidamente hacia la base central
+                        unidad.px = siguiente_px
+                        unidad.py = siguiente_py
+                        unidad.x = int(unidad.px // self.celda_size)
+                        unidad.y = int(unidad.py // self.celda_size)
 
         # 2. ATAQUES CON EFECTOS ESPECIALES
         self.cooldown_ataque_torres += 1
@@ -560,8 +621,12 @@ class JuegoApp:
                     else:
                         self.efectos_visuales.append({"tipo": "proyectil", "coords": (tx, ty, objetivo.px, objetivo.py)})
 
+        
         # 3. FILTRADO DE BAJAS
         self.atacante_mgr.unidades_vivas = [u for u in self.atacante_mgr.unidades_vivas if u.vida_actual > 0]
+        
+        # === Remueve los muros (o torres si llegaran a morir) con vida <= 0 ===
+        self.defensor_mgr.defensas_colocadas = [d for d in self.defensor_mgr.defensas_colocadas if d.vida_actual > 0]
 
         # 4. RENDER
         self.dibujar_escenario()
