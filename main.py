@@ -1,11 +1,9 @@
-# main.py
 import tkinter as tk
 from tkinter import messagebox
 import math
 import random
 import os
 import usuarios
-
 
 # Importamos las clases hijas y los managers desde tus otros archivos
 from defensor import *
@@ -18,7 +16,6 @@ ACCENT_DEF = "#00ffcc"    # Turquesa neón
 ACCENT_ATK = "#ff3e3e"    # Rojo neón
 TXT_COLOR = "#ffffff"     
 COLOR_BASE = "#ffd700"    
-
 
 
 class VentanaLogin:
@@ -37,7 +34,6 @@ class VentanaLogin:
         self.crear_widgets()
 
     def crear_widgets(self):
-        # Título Cyberpunk
         tk.Label(self.root, text="BASE ASSAULT SYSTEM", font=("Impact", 20), fg="#00ffcc", bg="#121214").pack(pady=20)
         
         # --- SECCIÓN JUGADOR 1 (DEFENSOR) ---
@@ -118,7 +114,7 @@ class VentanaLogin:
             self.jugador1 = u1
             self.jugador2 = u2
             messagebox.showinfo("Combate Listo", f"Bienvenidos\nDefensor: {u1}\nAtacante: {u2}")
-            self.root.destroy()  # Cierra la ventana de login para dar paso al juego principal
+            self.root.destroy()
         else:
             msg_error = ""
             if not v1: msg_error += f"Jugador 1: {m1}\n"
@@ -133,17 +129,14 @@ class VentanaLogin:
         
         tk.Label(ventana_rank, text="🏆 TOP 5 JUGADORES SUPREMOS 🏆", font=("Impact", 16), fg="#ffd700", bg="#121214").pack(pady=10)
         
-        # Panel divido en dos columnas
         split_frame = tk.Frame(ventana_rank, bg="#121214")
         split_frame.pack(fill="both", expand=True, padx=10)
         
-        # Columna Defensores
         f_def = tk.LabelFrame(split_frame, text=" Mejores Defensores 🛡️ ", fg="#00ffcc", bg="#1a1a1e")
         f_def.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         for idx, (user, data) in enumerate(usuarios.obtener_top_5("defensor")):
             tk.Label(f_def, text=f"{idx+1}. {user} - {data['victorias_defensor']} Victorias", fg="#ffffff", bg="#1a1a1e").pack(anchor="w", padx=5, pady=2)
             
-        # Columna Atacantes
         f_atk = tk.LabelFrame(split_frame, text=" Mejores Atacantes ⚔️ ", fg="#ff3e3e", bg="#1a1a1e")
         f_atk.pack(side="right", fill="both", expand=True, padx=10, pady=10)
         for idx, (user, data) in enumerate(usuarios.obtener_top_5("atacante")):
@@ -151,46 +144,40 @@ class VentanaLogin:
 
 
 class Ventana_facciones:
-
     def __init__(self, root, jugador1, jugador2, callback_inicio):
         self.root = root
-        self.root.title = ("Selección de facciones")
-        self.root.geometry ("500x450")
+        self.root.title("Selección de facciones")
+        self.root.geometry("500x450")
         self.root.configure(bg="#121214")
 
         self.jugador1 = jugador1
         self.jugador2 = jugador2
-        self.callback_inicio = callback_inicio #funcion para iniciar el juego real
+        self.callback_inicio = callback_inicio 
 
-        #funciones de tkinter para almacenar las facciones seleccionadas
         self.faccion_defensor = tk.StringVar(value="")
         self.faccion_atacante = tk.StringVar(value="")
 
         self.crear_widgets()
 
     def crear_widgets(self):
-        tk.Label (self.root, text="⚔️ ELIJAN SUS FACCIONES ⚔️", font=("Impact", 18), fg="#ffd700", bg="#121214").pack(pady=15)
+        tk.Label(self.root, text="⚔️ ELIJAN SUS FACCIONES ⚔️", font=("Impact", 18), fg="#ffd700", bg="#121214").pack(pady=15)
 
-        #opciones en frame
         frame_opciones = tk.Frame(self.root, bg="#121214")
         frame_opciones.pack(fill="both", expand=True, padx=20)
         facciones_disponibles = [
             ("Nórdica", "Nordica"),
             ("Mágica", "Magica"),
-            ("Futurista", "Futurística")
+            ("Futurista", "Futuristica")
         ]
     
-        #frame de columna para el defensor
         frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
         frame_defensor.pack(side="left", fill="both", expand=True, padx=10)
 
         for texto, valor in facciones_disponibles:
-            tk.Radiobutton(frame_defensor, text= texto, variable= self.faccion_defensor, value= valor,
-                           bg = "#1a1a1e", fg="#ffffff", selectcolor= "#2d2d34", activebackground= "#1a1a1e",
-                            activeforeground= "#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
+            tk.Radiobutton(frame_defensor, text=texto, variable=self.faccion_defensor, value=valor,
+                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e",
+                           activeforeground="#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
         
-        #frame de columna para el atacante
-    
         frame_atacante = tk.LabelFrame(frame_opciones, text=f" ⚔️ ATACANTE ({self.jugador2}) ", fg="#ff3e3e", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
         frame_atacante.pack(side="right", fill="both", expand=True, padx=10)
 
@@ -199,99 +186,101 @@ class Ventana_facciones:
                            bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e", activeforeground="#ffffff",
                            font=("Segoe UI", 9)).pack(anchor="w", pady=8)
             
-
-        #botón de confirmación
-        tk.Button(self.root , text="CONFIRMAR Y ENTRAR AL CAMPO DE BATALLA ➔", bg="#00ffd0", fg="#000000",
+        tk.Button(self.root, text="CONFIRMAR Y ENTRAR AL CAMPO DE BATALLA ➔", bg="#00ffd0", fg="#000000",
                   font=("Segoe UI", 11, "bold"), relief="flat", padx=15, pady=8, command=self.validar_seleccion).pack(pady=25)
 
     def validar_seleccion(self):
         frame_atacante = self.faccion_atacante.get()
         frame_defensor = self.faccion_defensor.get()
 
-        #validación de campos vacíos
-
         if not frame_atacante or not frame_defensor:
             messagebox.showerror("Campos Incompletos", "Ambos jugadores deben elegir una facción antes de continuar.")
             return
         
-        # RESTRICCIÓN DE RÚBRICA: No pueden ser iguales
         if frame_defensor == frame_atacante:
             messagebox.showerror("Conflicto de Facción", "¡Grave error comandante! El atacante y el defensor no pueden utilizar la misma facción.")
             return
             
-        # Si todo está correcto, destruimos esta ventana y mandamos los datos al juego principal
         self.root.destroy()
         self.callback_inicio(frame_defensor, frame_atacante)
 
 
-
-
-
-
 class JuegoApp:
-    def __init__(self, root):
+    def __init__(self, root, faccion_defensor, faccion_atacante):
         self.root = root
         self.root.title("Base Assault: Cyber Evolution - 2026")
         self.root.geometry("1150x720")
         self.root.configure(bg=BG_MAIN)
         
+        self.nombre_defensor = ""
+        self.nombre_atacante = ""
+        self.rondas_ganadas_defensor = 0
+        self.rondas_ganadas_atacante = 0
+        
         self.defensor_mgr = DefensorManager()
         self.atacante_mgr = AtacanteManager()
         
-        # Configuración del mapa
         self.filas = 10
         self.columnas = 10
         self.celda_size = 55
         self.base_central_pos = (5, 5) 
-        self.vida_base = 500           
+        self.vida_base = 500          
         
-        # Fases: CONSTRUCCION -> ATAQUE -> COMBATE
         self.fase_actual = "CONSTRUCCION"  
         self.clase_seleccionada = None     
 
-        # Sistema de Facciones (Rúbrica: Mínimo 3 facciones distintas)
         self.facciones_disponibles = ["Nordica", "Magica", "Futuristica"]
         
-        # Asignamos facciones diferentes obligatoriamente para cumplir la restricción
-        self.faccion_defensor = "Nordica"
-        self.faccion_atacante = "Futuristica"
-        
-        # Diccionario para evitar el Garbage Collector de Tkinter con las imágenes
+        # Guardamos correctamente las facciones inyectadas por las ventanas previas
+        self.faccion_defensor = faccion_defensor
+        self.faccion_atacante = faccion_atacante
+        self.faccion_seleccionada = faccion_defensor  # Arranca controlando el defensor
+
         self.assets_imagenes = {}
+        # Cargamos explícitamente la facción que arranca construyendo
         self.cargar_assets_imagenes()
 
-        # Lista para manejar efectos visuales temporales (como rayos o flechas)
         self.efectos_visuales = [] 
 
         self.crear_interfaz()
         self.actualizar_paneles_tienda()
 
+    def seleccionar_faccion(self, nombre_fac):
+        if nombre_fac in self.facciones_disponibles:
+            self.faccion_seleccionada = nombre_fac
+            print(f"Facción cambiada en memoria a: {self.faccion_seleccionada}")
+            self.cargar_assets_imagenes()
+        else:
+            print("Esa facción no existe.")
+
     def cargar_assets_imagenes(self):
-        """Carga los archivos de manera exacta con fallback a minúsculas."""
+        """Carga los archivos de la facción actual seleccionada."""
+        if not self.faccion_seleccionada:
+            return
+
         tipos_torres = ["Torre", "Mortero", "Ballesta"]
-        
-        # Inicializamos los contenedores
-        for fac in self.facciones_disponibles:
-            self.assets_imagenes[fac] = {}
-            
-        for fac in self.facciones_disponibles:
-            for tipo in tipos_torres:
-                nombre_archivo = f"{tipo} {fac}.png"
-                ruta_completa = os.path.join("assets","assets de defensa", nombre_archivo)
+        faccion = self.faccion_seleccionada
+        self.assets_imagenes[faccion] = {}
+
+        for tipo in tipos_torres:
+            nombre_archivo = f"{tipo} {faccion}.png"
+            ruta_completa = os.path.join("assets", "assets de defensa", nombre_archivo)
                 
-                try:
-                    # Intento 1: Tal cual está formateado (Ej: "Torre Nordica.png")
-                    if os.path.exists(ruta_completa):
-                        self.assets_imagenes[fac][tipo] = tk.PhotoImage(file=ruta_completa)
+            try:
+                if os.path.exists(ruta_completa):
+                    self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_completa)
+                    print(f"✅ Asset cargado: {ruta_completa}")
+                else:
+                    # Fallback minúsculas corregido
+                    nombre_minuscula = f"{tipo.lower()} {faccion.lower()}.png"
+                    ruta_minuscula = os.path.join("assets", "assets de defensa", nombre_minuscula)
+                    if os.path.exists(ruta_minuscula):
+                        self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_minuscula)
+                        print(f"✅ Asset cargado (fallback): {ruta_minuscula}")
                     else:
-                        # Intento 2: Fallback todo en minúsculas (Ej: "torre nordica.png")
-                        ruta_minuscula = os.path.join("assets", nombre_archivo.lower())
-                        if os.path.exists(ruta_minuscula):
-                            self.assets_imagenes[fac][tipo] = tk.PhotoImage(file=ruta_minuscula)
-                        else:
-                            print(f"⚠️ Archivo no encontrado: {ruta_completa} (ni su versión en minúsculas). Se usará figura geométrica.")
-                except Exception as e:
-                    print(f"❌ Error cargando {ruta_completa}: {e}")
+                        print(f"⚠️ Archivo no encontrado: {ruta_completa}")
+            except Exception as e:
+                print(f"❌ Error cargando {ruta_completa}: {e}")
 
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
@@ -299,7 +288,7 @@ class JuegoApp:
         elif self.fase_actual == "ATAQUE":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE ATACANTE ({self.faccion_atacante.upper()}) ⚔️  |  Oro Atacante: ${self.atacante_mgr.dinero}", fg=ACCENT_ATK)
         else:
-            self.lbl_info_ronda.config(text=f"🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Vida de la Base: {self.vida_base} HP", fg="#ffaa00")
+            self.lbl_info_ronda.config(text=f"🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Facciones enfrentadas", fg="#ffaa00")
 
     def crear_interfaz(self):
         # --- PANEL SUPERIOR ---
@@ -311,6 +300,11 @@ class JuegoApp:
         
         self.lbl_info_ronda = tk.Label(self.panel_superior, text="", font=("Segoe UI", 12, "bold"), bg=BG_PANEL)
         self.lbl_info_ronda.pack(pady=2)
+
+        # AGREGADO: Aquí está la etiqueta de vida de la base que faltaba en tu interfaz
+        self.lbl_vida_base = tk.Label(self.panel_superior, text=f"Vida de la Base: {self.vida_base} HP", font=("Segoe UI", 11, "bold"), fg=COLOR_BASE, bg=BG_PANEL)
+        self.lbl_vida_base.pack(pady=2)
+
         self.actualizar_labels_oro()
 
         # --- PANEL LATERAL ---
@@ -336,12 +330,10 @@ class JuegoApp:
     def dibujar_escenario(self):
         self.canvas_mapa.delete("all")
         
-        # Cuadrícula de fondo
         for i in range(self.filas + 1):
             self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#24242b")
             self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#24242b")
         
-        # Base Central
         bx, by = self.base_central_pos
         pad = 6
         cx = bx * self.celda_size + (self.celda_size // 2)
@@ -349,9 +341,8 @@ class JuegoApp:
         
         color_actual_base = COLOR_BASE if self.vida_base > 0 else "#555555"
         self.canvas_mapa.create_rectangle(bx*self.celda_size+pad, by*self.celda_size+pad, (bx+1)*self.celda_size-pad, (by+1)*self.celda_size-pad, fill=color_actual_base, outline="#b8860b", width=2)
-        self.canvas_mapa.create_text(cx, cy, text=f"👑\nBASE\n{self.vida_base}HP", fill="#000000", font=("Segoe UI", 8, "bold"), justify="center")
+        self.canvas_mapa.create_text(cx, cy, text=f"👑\nBASE\n{int(self.vida_base)}HP", fill="#000000", font=("Segoe UI", 8, "bold"), justify="center")
 
-        # 🏢 DIBUJAR DEFENSAS CON IMÁGENES REALES RECIÉN CARGADAS
         for torre in self.defensor_mgr.defensas_colocadas:
             tx = torre.x * self.celda_size + (self.celda_size // 2)
             ty = torre.y * self.celda_size + (self.celda_size // 2)
@@ -359,32 +350,24 @@ class JuegoApp:
             fac = self.faccion_defensor
             tipo_t = getattr(torre, 'tipo_imagen', 'Torre')
             
-            # Si el diccionario tiene el asset cargado en memoria, lo pinta
             if fac in self.assets_imagenes and tipo_t in self.assets_imagenes[fac]:
                 self.canvas_mapa.create_image(tx, ty, image=self.assets_imagenes[fac][tipo_t])
             else:
-                # Sistema de respaldo (Fallback) geométrico por si borran una imagen sin querer
                 self.canvas_mapa.create_oval(tx-20, ty-20, tx+20, ty+20, fill=BG_PANEL, outline=ACCENT_DEF, width=2)
                 emoji = "🏹" if isinstance(torre, TorreBasica) else "💥" if isinstance(torre, TorrePesada) else "🔮"
                 self.canvas_mapa.create_text(tx, ty, text=emoji, fill="#ffffff", font=("Arial", 14))
 
-        # 🪖 DIBUJAR ATACANTES CON COORDENADAS CONTINUAS
         for unidad in self.atacante_mgr.unidades_vivas:
             ux, uy = unidad.px, unidad.py
-            
-            # NOTA: Para las tropas hacés el mismo mapeo. 
-            # De momento dejamos círculos neón hasta que agregues tus sprites de tropas a assets/
             self.canvas_mapa.create_oval(ux-15, uy-15, ux+15, uy+15, fill="#2a1415", outline=ACCENT_ATK, width=2)
             emoji = "🪖" if isinstance(unidad, Soldado) else "🛡️" if isinstance(unidad, Tanque) else "⚡"
             self.canvas_mapa.create_text(ux, uy-2, text=emoji, fill="#ffffff", font=("Arial", 10))
             
-            # Barra de Vida dinámica debajo de cada unidad
             pct_vida = unidad.vida_actual / unidad.vida_maxima
             color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
             self.canvas_mapa.create_rectangle(ux-18, uy+18, ux+18, uy+22, fill="#333333", outline="")
             self.canvas_mapa.create_rectangle(ux-18, uy+18, ux-18 + (36 * pct_vida), uy+22, fill=color_barra, outline="")
 
-        # DIBUJAR EFECTOS VISUALES
         for efecto in self.efectos_visuales:
             tipo = efecto["tipo"]
             if tipo == "rayo":
@@ -398,15 +381,10 @@ class JuegoApp:
                 x, y = efecto["coords"]
                 self.canvas_mapa.create_oval(x-25, y-25, x+25, y+25, outline="#ff5500", width=2)
 
-
-
-
-
     def actualizar_paneles_tienda(self):
         for widget in self.contenedor_botones.winfo_children():
             widget.destroy()
 
-        # !!! LÍNEA CLAVE: Asegurar que el botón se reactive al cambiar de fase
         self.btn_fase.config(state="normal") 
 
         if self.fase_actual == "CONSTRUCCION":
@@ -426,9 +404,6 @@ class JuegoApp:
         elif self.fase_actual == "COMBATE":
             self.lbl_seccion.config(text="⚔️ EN BATALLA...", fg="#ffaa00")
             self.btn_fase.config(text="SIMULANDO... ⏳", bg="#44444a", fg="#aaaaaa", state="disabled")
-
-
-
 
     def seleccionar_objeto(self, clase):
         self.clase_seleccionada = clase
@@ -457,6 +432,8 @@ class JuegoApp:
         if self.fase_actual == "CONSTRUCCION":
             self.fase_actual = "ATAQUE"
             self.clase_seleccionada = None
+            # IMPORTANTE: Al pasar a la fase de ataque, cargamos los assets de esa facción en memoria
+            self.seleccionar_faccion(self.faccion_atacante)
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()
         elif self.fase_actual == "ATAQUE":
@@ -467,7 +444,6 @@ class JuegoApp:
             self.cooldown_ataque_torres = 0 
             self.ejecutar_game_loop()
 
-#*
     def ejecutar_game_loop(self):
         if self.fase_actual != "COMBATE": return
 
@@ -529,20 +505,15 @@ class JuegoApp:
         self.dibujar_escenario()
         self.actualizar_labels_oro()
         
-        # === ¡AQUÍ VA LA LÍNEA! Actualiza la vida de la base limpiando decimales locos en cada frame ===
         self.lbl_vida_base.config(text=f"Vida de la Base: {max(0, round(self.vida_base, 1))} HP")
-
 
         # 5. EVALUAR RONDAS
         if self.vida_base <= 0.1:
             self.vida_base = 0
-            
-            # === TAMBIÉN AQUÍ: Para asegurar que el label marque exactamente 0 HP al perder ===
             self.lbl_vida_base.config(text="Vida de la Base: 0 HP")
             
             self.rondas_ganadas_atacante += 1
             
-            # Verificar si el Atacante ganó la PARTIDA completa (3 rondas)
             if self.rondas_ganadas_atacante >= 3:
                 messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🔥 ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
                 usuarios.registrar_victoria(self.nombre_atacante, "atacante")
@@ -555,7 +526,6 @@ class JuegoApp:
         elif not self.atacante_mgr.unidades_vivas:
             self.rondas_ganadas_defensor += 1
             
-            # Verificar si el Defensor ganó la PARTIDA completa (3 rondas)
             if self.rondas_ganadas_defensor >= 3:
                 messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🛡️ ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
                 usuarios.registrar_victoria(self.nombre_defensor, "defensor")
@@ -566,7 +536,6 @@ class JuegoApp:
                 self.reiniciar_partida()
                 
         else:
-            # Si la ronda no ha terminado, el bucle sigue corriendo
             self.root.after(33, self.ejecutar_game_loop)
 
     def reiniciar_partida(self):
@@ -577,11 +546,13 @@ class JuegoApp:
         self.defensor_mgr.dinero += 400 
         self.atacante_mgr.dinero += 400
         self.fase_actual = "CONSTRUCCION"
+        
+        # Volvemos a setear la facción del defensor para la nueva fase de construcción
+        self.seleccionar_faccion(self.faccion_defensor)
+        
         self.actualizar_paneles_tienda()
         self.dibujar_escenario()
         self.actualizar_labels_oro()
-        
-        # === ¡AQUÍ TAMBIÉN! Para que vuelva a pintar 500 HP al iniciar la nueva ronda ===
         self.lbl_vida_base.config(text=f"Vida de la Base: {self.vida_base} HP")
 
 
@@ -594,15 +565,12 @@ if __name__ == "__main__":
     # 2. Si se loguearon, pasar a la selección de facciones
     if app_login.jugador1 and app_login.jugador2:
         def levantar_juego_principal(fac_def, fac_atk):
-            # Esta función interna se ejecuta solo tras validar las facciones
             root_juego = tk.Tk()
-            app_juego = JuegoApp(root_juego)
+            
+            # Pasamos las facciones directamente por parámetros para evitar inyecciones vacías
+            app_juego = JuegoApp(root_juego, fac_def, fac_atk)
             app_juego.nombre_defensor = app_login.jugador1
             app_juego.nombre_atacante = app_login.jugador2
-            
-            # Guardamos las facciones elegidas para usarlas en las rutas de tus imágenes
-            app_juego.fac_defensor = fac_def
-            app_juego.fac_atacante = fac_atk
             
             root_juego.mainloop()
 
