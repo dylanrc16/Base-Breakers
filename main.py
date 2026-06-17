@@ -150,6 +150,83 @@ class VentanaLogin:
             tk.Label(f_atk, text=f"{idx+1}. {user} - {data['victorias_atacante']} Victorias", fg="#ffffff", bg="#1a1a1e").pack(anchor="w", padx=5, pady=2)
 
 
+class Ventana_facciones:
+
+    def __init__(self, root, jugador1, jugador2, callback_inicio):
+        self.root = root
+        self.root.title = ("Selección de facciones")
+        self.root.geometry ("500x450")
+        self.root.configure(bg="#121214")
+
+        self.jugador1 = jugador1
+        self.jugador2 = jugador2
+        self.callback_inicio = callback_inicio #funcion para iniciar el juego real
+
+        #funciones de tkinter para almacenar las facciones seleccionadas
+        self.faccion_defensor = tk.StringVar(value="")
+        self.faccion_atacante = tk.StringVar(value="")
+
+        self.crear_widgets()
+
+    def crear_widgets(self):
+        tk.Label (self.root, text="⚔️ ELIJAN SUS FACCIONES ⚔️", font=("Impact", 18), fg="#ffd700", bg="#121214").pack(pady=15)
+
+        #opciones en frame
+        frame_opciones = tk.Frame(self.root, bg="#121214")
+        frame_opciones.pack(fill="both", expand=True, padx=20)
+        facciones_disponibles = [
+            ("Nórdica", "Nordica"),
+            ("Mágica", "Magica"),
+            ("Futurista", "Futurística")
+        ]
+    
+        #frame de columna para el defensor
+        frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        frame_defensor.pack(side="left", fill="both", expand=True, padx=10)
+
+        for texto, valor in facciones_disponibles:
+            tk.Radiobutton(frame_defensor, text= texto, variable= self.faccion_defensor, value= valor,
+                           bg = "#1a1a1e", fg="#ffffff", selectcolor= "#2d2d34", activebackground= "#1a1a1e",
+                            activeforeground= "#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
+        
+        #frame de columna para el atacante
+    
+        frame_atacante = tk.LabelFrame(frame_opciones, text=f" ⚔️ ATACANTE ({self.jugador2}) ", fg="#ff3e3e", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        frame_atacante.pack(side="right", fill="both", expand=True, padx=10)
+
+        for texto, valor in facciones_disponibles:
+            tk.Radiobutton(frame_atacante, text=texto, variable=self.faccion_atacante, value=valor,
+                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e", activeforeground="#ffffff",
+                           font=("Segoe UI", 9)).pack(anchor="w", pady=8)
+            
+
+        #botón de confirmación
+        tk.Button(self.root , text="CONFIRMAR Y ENTRAR AL CAMPO DE BATALLA ➔", bg="#00ffd0", fg="#000000",
+                  font=("Segoe UI", 11, "bold"), relief="flat", padx=15, pady=8, command=self.validar_seleccion).pack(pady=25)
+
+    def validar_seleccion(self):
+        frame_atacante = self.faccion_atacante.get()
+        frame_defensor = self.faccion_defensor.get()
+
+        #validación de campos vacíos
+
+        if not frame_atacante or not frame_defensor:
+            messagebox.showerror("Campos Incompletos", "Ambos jugadores deben elegir una facción antes de continuar.")
+            return
+        
+        # RESTRICCIÓN DE RÚBRICA: No pueden ser iguales
+        if frame_defensor == frame_atacante:
+            messagebox.showerror("Conflicto de Facción", "¡Grave error comandante! El atacante y el defensor no pueden utilizar la misma facción.")
+            return
+            
+        # Si todo está correcto, destruimos esta ventana y mandamos los datos al juego principal
+        self.root.destroy()
+        self.callback_inicio(frame_defensor, frame_atacante)
+
+
+
+
+
 
 class JuegoApp:
     def __init__(self, root):
@@ -390,6 +467,7 @@ class JuegoApp:
             self.cooldown_ataque_torres = 0 
             self.ejecutar_game_loop()
 
+#*
     def ejecutar_game_loop(self):
         if self.fase_actual != "COMBATE": return
 
@@ -450,19 +528,24 @@ class JuegoApp:
         # 4. RENDER
         self.dibujar_escenario()
         self.actualizar_labels_oro()
+        
+        # === ¡AQUÍ VA LA LÍNEA! Actualiza la vida de la base limpiando decimales locos en cada frame ===
+        self.lbl_vida_base.config(text=f"Vida de la Base: {max(0, round(self.vida_base, 1))} HP")
+
 
         # 5. EVALUAR RONDAS
-        if self.vida_base <= 0:
+        if self.vida_base <= 0.1:
+            self.vida_base = 0
+            
+            # === TAMBIÉN AQUÍ: Para asegurar que el label marque exactamente 0 HP al perder ===
+            self.lbl_vida_base.config(text="Vida de la Base: 0 HP")
+            
             self.rondas_ganadas_atacante += 1
             
             # Verificar si el Atacante ganó la PARTIDA completa (3 rondas)
             if self.rondas_ganadas_atacante >= 3:
                 messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🔥 ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
-                
-                # OJO: AQUÍ VA TU BLOQUE DE CÓDIGO PARA EL ATACANTE
                 usuarios.registrar_victoria(self.nombre_atacante, "atacante")
-                
-                # Cerramos el juego o reiniciamos contadores globales
                 self.root.destroy() 
                 return
             else:
@@ -475,11 +558,7 @@ class JuegoApp:
             # Verificar si el Defensor ganó la PARTIDA completa (3 rondas)
             if self.rondas_ganadas_defensor >= 3:
                 messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🛡️ ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
-                
-                # OJO: AQUÍ VA TU BLOQUE DE CÓDIGO PARA EL DEFENSOR
                 usuarios.registrar_victoria(self.nombre_defensor, "defensor")
-                
-                # Cerramos el juego o reiniciamos contadores globales
                 self.root.destroy()
                 return
             else:
@@ -501,18 +580,32 @@ class JuegoApp:
         self.actualizar_paneles_tienda()
         self.dibujar_escenario()
         self.actualizar_labels_oro()
+        
+        # === ¡AQUÍ TAMBIÉN! Para que vuelva a pintar 500 HP al iniciar la nueva ronda ===
+        self.lbl_vida_base.config(text=f"Vida de la Base: {self.vida_base} HP")
+
 
 if __name__ == "__main__":
-    # 1. Ejecutar Fase de Login primero
+    # 1. Lanzar Inicio de Sesión
     root_login = tk.Tk()
     app_login = VentanaLogin(root_login)
     root_login.mainloop()
     
-    # 2. Si se validaron ambos jugadores con éxito, se despliega la app del juego real
+    # 2. Si se loguearon, pasar a la selección de facciones
     if app_login.jugador1 and app_login.jugador2:
-        root_juego = tk.Tk()
-        # Puedes guardar los nombres de los jugadores dentro de la clase JuegoApp para usarlos al final
-        app_juego = JuegoApp(root_juego)
-        app_juego.nombre_defensor = app_login.jugador1
-        app_juego.nombre_atacante = app_login.jugador2
-        root_juego.mainloop()
+        def levantar_juego_principal(fac_def, fac_atk):
+            # Esta función interna se ejecuta solo tras validar las facciones
+            root_juego = tk.Tk()
+            app_juego = JuegoApp(root_juego)
+            app_juego.nombre_defensor = app_login.jugador1
+            app_juego.nombre_atacante = app_login.jugador2
+            
+            # Guardamos las facciones elegidas para usarlas en las rutas de tus imágenes
+            app_juego.fac_defensor = fac_def
+            app_juego.fac_atacante = fac_atk
+            
+            root_juego.mainloop()
+
+        root_fac = tk.Tk()
+        app_fac = Ventana_facciones(root_fac, app_login.jugador1, app_login.jugador2, levantar_juego_principal)
+        root_fac.mainloop()
