@@ -260,11 +260,11 @@ class JuegoApp:
         if not self.faccion_seleccionada:
             return
 
-        tipos_torres = ["Torre", "Mortero", "Ballesta"]
+        tipos_defensas = ["Torre", "Mortero", "Ballesta", "Muro" ]
         faccion = self.faccion_seleccionada
         self.assets_imagenes[faccion] = {}
 
-        for tipo in tipos_torres:
+        for tipo in tipos_defensas:
             nombre_archivo = f"{tipo} {faccion}.png"
             ruta_completa = os.path.join("assets", "assets de defensa", nombre_archivo)
                 
@@ -284,7 +284,7 @@ class JuegoApp:
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
 
-        # --- AGREGADO: Cargar la imagen de la base central ---
+        #carga de imagen de la base central
         if self.img_base_central is None: # Para cargarla solo una vez
             ruta_base = os.path.join("assets", "Base.png")
             try:
