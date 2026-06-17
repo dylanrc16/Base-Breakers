@@ -471,103 +471,117 @@ class JuegoApp:
     def ejecutar_game_loop(self):
         if self.fase_actual != "COMBATE": return
 
-        bx, by = self.base_central_pos
-        base_px = bx * self.celda_size + (self.celda_size // 2)
-        base_py = by * self.celda_size + (self.celda_size // 2)
+        # === INICIO DEL TRY...EXCEPT PARA EVITAR CONGELAMIENTOS ===
+        try:
+            bx, by = self.base_central_pos
+            base_px = bx * self.celda_size + (self.celda_size // 2)
+            base_py = by * self.celda_size + (self.celda_size // 2)
 
-        self.efectos_visuales = []
+            self.efectos_visuales = []
 
-        # 1. MOVIMIENTO CONTINUO
-        for unidad in self.atacante_mgr.unidades_vivas:
-            dx = base_px - unidad.px
-            dy = base_py - unidad.py
-            distancia = math.hypot(dx, dy)
+            # 1. MOVIMIENTO CONTINUO
+            for unidad in self.atacante_mgr.unidades_vivas:
+                dx = base_px - unidad.px
+                dy = base_py - unidad.py
+                import math
+                distancia = math.hypot(dx, dy)
 
-            if distancia <= 35:
-                self.vida_base -= (unidad.danio * 0.03)
-                if self.vida_base < 0: self.vida_base = 0
-            else:
-                velocidad_frames = (getattr(unidad, 'velocidad', 1) * 1.8)
-                unidad.px += (dx / distancia) * velocidad_frames
-                unidad.py += (dy / distancia) * velocidad_frames
-                unidad.x = int(unidad.px // self.celda_size)
-                unidad.y = int(unidad.py // self.celda_size)
+                if distancia <= 35:
+                    # Usamos getattr para evitar un error fatal si a la tropa le falta el self.danio 
+                    unidad_danio = getattr(unidad, 'danio', 0) 
+                    self.vida_base -= (unidad_danio * 0.03)
+                    if self.vida_base < 0: self.vida_base = 0
+                else:
+                    velocidad_frames = (getattr(unidad, 'velocidad', 1) * 1.8)
+                    unidad.px += (dx / distancia) * velocidad_frames
+                    unidad.py += (dy / distancia) * velocidad_frames
+                    unidad.x = int(unidad.px // self.celda_size)
+                    unidad.y = int(unidad.py // self.celda_size)
 
-        # 2. ATAQUES CON EFECTOS ESPECIALES
-        self.cooldown_ataque_torres += 1
-        if self.cooldown_ataque_torres >= 15:
-            self.cooldown_ataque_torres = 0  
+            # 2. ATAQUES CON EFECTOS ESPECIALES
+            self.cooldown_ataque_torres += 1
+            if self.cooldown_ataque_torres >= 15:
+                self.cooldown_ataque_torres = 0  
 
-            for torre in self.defensor_mgr.defensas_colocadas:
-                tx = torre.x * self.celda_size + (self.celda_size // 2)
-                ty = torre.y * self.celda_size + (self.celda_size // 2)
-                
-                rango_en_pixeles = torre.alcance * self.celda_size
-                objetivo = None
-                dist_min = rango_en_pixeles
-
-                for unidad in self.atacante_mgr.unidades_vivas:
-                    d = math.hypot(unidad.px - tx, unidad.py - ty)
-                    if d <= dist_min:
-                        objetivo = unidad
-                        dist_min = d
-
-                if objetivo:
-                    objetivo.vida_actual -= torre.danio
+                for torre in self.defensor_mgr.defensas_colocadas:
+                    tx = torre.x * self.celda_size + (self.celda_size // 2)
+                    ty = torre.y * self.celda_size + (self.celda_size // 2)
                     
-                    if isinstance(torre, TorreMagica):
-                        self.efectos_visuales.append({"tipo": "rayo", "coords": (tx, ty, objetivo.px, objetivo.py)})
-                    elif isinstance(torre, TorrePesada):
-                        self.efectos_visuales.append({"tipo": "explosion", "coords": (objetivo.px, objetivo.py)})
-                    else:
-                        self.efectos_visuales.append({"tipo": "proyectil", "coords": (tx, ty, objetivo.px, objetivo.py)})
+                    rango_en_pixeles = torre.alcance * self.celda_size
+                    objetivo = None
+                    dist_min = rango_en_pixeles
 
-        # 3. FILTRADO DE BAJAS
-        self.atacante_mgr.unidades_vivas = [u for u in self.atacante_mgr.unidades_vivas if u.vida_actual > 0]
+                    for unidad in self.atacante_mgr.unidades_vivas:
+                        d = math.hypot(unidad.px - tx, unidad.py - ty)
+                        if d <= dist_min:
+                            objetivo = unidad
+                            dist_min = d
 
-        # 4. RENDER
-        self.dibujar_escenario()
-        self.actualizar_labels_oro()
-        
-        # === ¡AQUÍ VA LA LÍNEA! Actualiza la vida de la base limpiando decimales locos en cada frame ===
-        self.lbl_vida_base.config(text=f"Vida de la Base: {max(0, round(self.vida_base, 1))} HP")
+                    if objetivo:
+                        torre_danio = getattr(torre, 'danio', 0)
+                        objetivo.vida_actual -= torre_danio
+                        
+                        if isinstance(torre, TorreMagica):
+                            self.efectos_visuales.append({"tipo": "rayo", "coords": (tx, ty, objetivo.px, objetivo.py)})
+                        elif isinstance(torre, TorrePesada):
+                            self.efectos_visuales.append({"tipo": "explosion", "coords": (objetivo.px, objetivo.py)})
+                        else:
+                            self.efectos_visuales.append({"tipo": "proyectil", "coords": (tx, ty, objetivo.px, objetivo.py)})
 
+            # 3. FILTRADO DE BAJAS
+            self.atacante_mgr.unidades_vivas = [u for u in self.atacante_mgr.unidades_vivas if u.vida_actual > 0]
 
-        # 5. EVALUAR RONDAS
-        if self.vida_base <= 0.1:
-            self.vida_base = 0
+            # 4. RENDER
+            self.dibujar_escenario()
+            self.actualizar_labels_oro()
             
-            # === TAMBIÉN AQUÍ: Para asegurar que el label marque exactamente 0 HP al perder ===
-            self.lbl_vida_base.config(text="Vida de la Base: 0 HP")
-            
-            self.rondas_ganadas_atacante += 1
-            
-            # Verificar si el Atacante ganó la PARTIDA completa (3 rondas)
-            if self.rondas_ganadas_atacante >= 3:
-                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🔥 ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
-                usuarios.registrar_victoria(self.nombre_atacante, "atacante")
-                self.root.destroy() 
-                return
-            else:
-                messagebox.showinfo("Fin de Ronda", f"💥 El atacante ganó esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
-                self.reiniciar_partida()
+            # === EL LABEL CORREGIDO ===
+            # Se usa lbl_info_ronda en lugar de lbl_vida_base para no crashear Tkinter
+            self.lbl_info_ronda.config(text=f"🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Vida de la Base: {max(0, round(self.vida_base, 1))} HP", fg="#ffaa00")
 
-        elif not self.atacante_mgr.unidades_vivas:
-            self.rondas_ganadas_defensor += 1
-            
-            # Verificar si el Defensor ganó la PARTIDA completa (3 rondas)
-            if self.rondas_ganadas_defensor >= 3:
-                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🛡️ ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
-                usuarios.registrar_victoria(self.nombre_defensor, "defensor")
-                self.root.destroy()
-                return
-            else:
-                messagebox.showinfo("Fin de Ronda", f"🛡️ El defensor repelió el ataque en esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
-                self.reiniciar_partida()
+            # 5. EVALUAR RONDAS
+            if self.vida_base <= 0.1:
+                self.vida_base = 0
                 
-        else:
-            # Si la ronda no ha terminado, el bucle sigue corriendo
-            self.root.after(33, self.ejecutar_game_loop)
+                # Refrescamos el texto a 0 exacto al perder
+                self.lbl_info_ronda.config(text="🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Vida de la Base: 0 HP", fg="#ffaa00")
+                
+                self.rondas_ganadas_atacante += 1
+                
+                # Verificar si el Atacante ganó la PARTIDA completa (3 rondas)
+                if self.rondas_ganadas_atacante >= 3:
+                    messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🔥 ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
+                    usuarios.registrar_victoria(self.nombre_atacante, "atacante")
+                    self.root.destroy() 
+                    return
+                else:
+                    messagebox.showinfo("Fin de Ronda", f"💥 El atacante ganó esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
+                    self.reiniciar_partida()
+
+            elif not self.atacante_mgr.unidades_vivas:
+                self.rondas_ganadas_defensor += 1
+                
+                # Verificar si el Defensor ganó la PARTIDA completa (3 rondas)
+                if self.rondas_ganadas_defensor >= 3:
+                    messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🛡️ ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
+                    usuarios.registrar_victoria(self.nombre_defensor, "defensor")
+                    self.root.destroy()
+                    return
+                else:
+                    messagebox.showinfo("Fin de Ronda", f"🛡️ El defensor repelió el ataque en esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
+                    self.reiniciar_partida()
+                    
+            else:
+                # Si la ronda no ha terminado, el bucle sigue corriendo
+                self.root.after(33, self.ejecutar_game_loop)
+                
+        # === FIN DEL TRY, INICIO DEL EXCEPT ===
+        except Exception as e:
+            print("\n" + "="*50)
+            print(f"🔥 ¡ERROR DETECTADO EN EL COMBATE!: {e}")
+            import traceback
+            traceback.print_exc()
+            print("="*50 + "\n")
 
     def reiniciar_partida(self):
         self.vida_base = 500
