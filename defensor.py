@@ -11,6 +11,7 @@ class Defensa:
         self.alcance = alcance
         self.habilidad = habilidad
         self.turnos_habilidad = turnos_habilidad
+        self.habilidad_activa = False
         self.contador_turnos = 0
         self.x = x
         self.y = y
@@ -40,6 +41,11 @@ class TorreBasica(Defensa):
             
             x=x, y=y, faccion_visual=faccion_visual
         )
+    def usar_habilidad(self):
+        
+        if not self.habilidad_activa:
+            self.habilidad_activa = True  
+            self.vida_actual = self.vida_maxima  # Se sana al 100% al instante
 
 
 
@@ -53,6 +59,13 @@ class TorrePesada(Defensa):
             habilidad="Daño en Área", turnos_habilidad=4, 
             x=x, y=y, faccion_visual=faccion_visual
         )
+    
+    def usar_habilidad(self):
+        """Lógica de Escudo: Se cura una vez por partida."""
+        if not self.habilidad_activa:
+            self.habilidad_activa = True  
+            self.daño *= 2.0  # Pasa de 25 a 50 de daño
+        
 
 
 
@@ -63,9 +76,16 @@ class TorreMagica(Defensa):
         # Daño bajo, pero habilidad especial fuerte
         super().__init__(
             nombre="Torre Mágica", costo=200, vida=250, daño=15, alcance=4,
-            habilidad="Congelar", turnos_habilidad=3, 
+            habilidad="Amplificacion", turnos_habilidad=3, 
             x=x, y=y, faccion_visual=faccion_visual
         )
+    
+    def usar_habilidad(self):
+
+        if not self.habilidad_activa:
+            self.habilidad_activa = True  
+            self.alcance += 2  # Sube el alcance de 4 a 6 casillas, cubriendo casi todo el Canvas
+            
 
 class Muros(Defensa):
     def __init__(self, x, y, faccion_visual):
