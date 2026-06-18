@@ -270,7 +270,7 @@ class JuegoApp:
             items = ["Torre", "Mortero", "Ballesta", "Muro"]
 
 
-            nombre_base = f"Base {faccion}.png"
+            nombre_base = f"Base {self.faccion_defensor}.png"
             #buscamos la base en la carpeta assets-main
             ruta_base = os.path.join("assets", "main", nombre_base)
             if os.path.exists(ruta_base):
@@ -362,39 +362,85 @@ class JuegoApp:
         self.canvas_mapa.bind("<Button-1>", self.click_en_mapa)
         self.dibujar_escenario()
 
-
     def dibujar_escenario(self):
+        # 1. LIMPIAR EL CANVAS ANTES DE VOLVER A PINTAR
         self.canvas_mapa.delete("all")
         
-        for i in range(self.filas + 1):
-            self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#24242b")
-            self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#24242b")
+        # =========================================================================
+        # 🏞️ 2. DIBUJAR EL NUEVO FONDO NÓRDICO NEVADO (CENTRADO)
+        # =========================================================================
+        # Guardá la imagen nueva que te mandé en: assets/main/Fondo_Mapa.png
+        ruta_fondo = os.path.join("assets", "main", "Fondo_Mapa.png")
         
-        # --- BASE CENTRAL ---
+        ruta_fondo = os.path.join("assets", "main", "Fondo_Mapa.png")
+        
+        if not hasattr(self, 'img_fondo_terreno') or self.img_fondo_terreno is None:
+            if os.path.exists(ruta_fondo):
+                try:
+                    img_original = tk.PhotoImage(file=ruta_fondo)
+                    
+                    ancho_orig = img_original.width()
+                    alto_orig = img_original.height()
+                    
+                    # Calculamos las esquinas del cuadro de 600x600 del puro centro
+                    x1 = (ancho_orig - 600) // 2
+                    y1 = (alto_orig - 600) // 2
+                    x2 = x1 + 600
+                    y2 = y1 + 600
+                    
+                    # Creamos el contenedor destino vacío de 600x600
+                    self.img_fondo_terreno = tk.PhotoImage(width=600, height=600)
+                    
+                    # 👈 SOLUCIÓN AL ERROR: Usamos una llamada directa a Tcl que no falla con los argumentos
+                    self.canvas_mapa.tk.call(self.img_fondo_terreno, 'copy', img_original, 
+                                             '-from', x1, y1, x2, y2, 
+                                             '-to', 0, 0)
+                    
+                    print("🌲 Fondo Nórdico recortado exitosamente a 600x600 píxeles.")
+                except Exception as e:
+                    print(f"❌ Error al procesar o recortar Fondo_Mapa.png: {e}")
+                    self.img_fondo_terreno = None
+
+        if self.img_fondo_terreno:
+            self.canvas_mapa.create_image(300, 300, image=self.img_fondo_terreno)
+            
+        
+        # =========================================================================
+        # 📐 3. CUADRÍCULA ESTILO CLASH (PUNTEADA Y SUAVE)
+        # =========================================================================
+        # Usamos líneas discontinuas ("dash") blancas para que calce bien con el ambiente de nieve
+        for i in range(self.filas + 1):
+            self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#ffffff", dash=(2, 4))
+            self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#ffffff", dash=(2, 4))
+        
+        # =========================================================================
+        # 🏢 4. BASE CENTRAL
+        # =========================================================================
         bx, by = self.base_central_pos
         cx = bx * self.celda_size + (self.celda_size // 2)
         cy = by * self.celda_size + (self.celda_size // 2)
         
-        # Si la imagen existe y la base sigue viva, la dibujamos
         if self.vida_base > 0:
-            self.canvas_mapa.create_image(cx, cy, image=self.img_base_central)
-            # Le dejamos un pequeño texto abajo o encima con la vida para que el usuario sepa cuánto le queda
-            self.canvas_mapa.create_text(cx, cy + 20, text=f"{int(self.vida_base)} HP", fill="#ffffff", font=("Segoe UI", 8, "bold"))
+            if hasattr(self, 'img_base_central') and self.img_base_central:
+                self.canvas_mapa.create_image(cx, cy, image=self.img_base_central)
+            
+            # Texto de la vida con color amarillo dorado resaltante sobre la nieve
+            self.canvas_mapa.create_text(cx, cy + 20, text=f"{int(self.vida_base)} HP", fill="#ffd700", font=("Segoe UI", 8, "bold"))
 
+        # =========================================================================
+        # 🏹 5. DEFENSAS COLOCADAS (TORRES Y MUROS)
+        # =========================================================================
         for torre in self.defensor_mgr.defensas_colocadas:
             tx = torre.x * self.celda_size + (self.celda_size // 2)
             ty = torre.y * self.celda_size + (self.celda_size // 2)
             
-            # 1. DIBUJAR LA ESTRUCTURA (IMAGEN O EMOJI)
             fac = self.faccion_defensor
             tipo_t = getattr(torre, 'tipo_imagen', 'Torre')
             
             if fac in self.assets_imagenes and tipo_t in self.assets_imagenes[fac]:
                 self.canvas_mapa.create_image(tx, ty, image=self.assets_imagenes[fac][tipo_t])
             else:
-                # Si es un muro, dibujamos el bloque especial
                 if tipo_t == "Muro":
-                    # Ajustado para que el muro se vea centrado en la celda
                     x_izq, y_sup = torre.x * self.celda_size + 8, torre.y * self.celda_size + 8
                     x_der, y_inf = (torre.x + 1) * self.celda_size - 8, (torre.y + 1) * self.celda_size - 8
                     self.canvas_mapa.create_rectangle(x_izq, y_sup, x_der, y_inf, fill="#5a5a66", outline="#8a8a98", width=2)
@@ -403,50 +449,46 @@ class JuegoApp:
                     emoji = "🏹" if isinstance(torre, TorreBasica) else "💥" if isinstance(torre, TorrePesada) else "🔮"
                     self.canvas_mapa.create_text(tx, ty, text=emoji, fill="#ffffff", font=("Arial", 14))
 
-            # 2. DIBUJAR BARRA DE VIDA (SOLO SI NO ESTÁ A VIDA LLENA PARA NO ENSUCIAR EL MAPA)
+            # Barra de vida de defensas (Fijada con tus coordenadas exactas)
             if torre.vida_actual < torre.vida_maxima:
                 pct_vida = max(0, torre.vida_actual / torre.vida_maxima)
                 color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
                 
-                # Posición fija relativa al centro de la celda
-                b_x1, b_y1 = tx - 20, ty + 15  # <--- SUBÍ UN POCO EL Y (de +25 a +15)
+                b_x1, b_y1 = tx - 20, ty + 15
                 b_x2, b_y2 = tx + 20, ty + 19
                 
                 self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x2, b_y2, fill="#333333", outline="")
                 self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x1 + (40 * pct_vida), b_y2, fill=color_barra, outline="")
 
-
-
-
+        # =========================================================================
+        # ⚔️ 6. ATACANTES (UNIDADES VIVAS)
+        # =========================================================================
         for unidad in self.atacante_mgr.unidades_vivas:
             ux, uy = unidad.px, unidad.py
             fac = self.faccion_atacante
-            tipo_u = unidad.__class__.__name__ #obtengo el nombre de la clase: soldado, tanque...
+            tipo_u = unidad.__class__.__name__
 
             if fac in self.assets_imagenes and tipo_u in self.assets_imagenes[fac]:
-                self.canvas_mapa.create_image(ux, uy, image = self.assets_imagenes[fac][tipo_u])
-            
+                self.canvas_mapa.create_image(ux, uy, image=self.assets_imagenes[fac][tipo_u])
             else:
                 self.canvas_mapa.create_oval(ux-15, uy-15, ux+15, uy+15, fill="#2a1415", outline=ACCENT_ATK, width=2)
                 emoji = "🪖" if isinstance(unidad, Soldado) else "🛡️" if isinstance(unidad, Tanque) else "⚡"
                 self.canvas_mapa.create_text(ux, uy-2, text=emoji, fill="#ffffff", font=("Arial", 10))
 
-            #barra de vida
-            
-            # 2. DIBUJAR BARRA DE VIDA (SOLO SI NO ESTÁ A VIDA LLENA PARA NO ENSUCIAR EL MAPA)
+            # Barra de vida de atacantes (Corregido: Cambié tu variable 'ty' por 'uy' para que siga al atacante)
             if unidad.vida_actual < unidad.vida_maxima:
                 pct_vida = max(0, unidad.vida_actual / unidad.vida_maxima)
                 color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
                 
-                # Posición fija relativa al centro de la celda
-                b_x1, b_y1 = ux - 20, ty + 15  # <--- SUBÍ UN POCO EL Y (de +25 a +15)
-                b_x2, b_y2 = ux + 20, ty + 19
+                b_x1, b_y1 = ux - 20, uy - 22  # Subido arriba de la unidad usando 'uy' para que no quede en el suelo
+                b_x2, b_y2 = ux + 20, uy - 18
                 
                 self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x2, b_y2, fill="#333333", outline="")
                 self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x1 + (40 * pct_vida), b_y2, fill=color_barra, outline="")
 
-
-
+        # =========================================================================
+        # ⚡ 7. EFECTOS VISUALES (CAPA SUPERIOR - DISPAROS, RAYOS Y EXPLOSIONES)
+        # =========================================================================
         for efecto in self.efectos_visuales:
             tipo = efecto["tipo"]
             if tipo == "rayo":
@@ -459,6 +501,7 @@ class JuegoApp:
             elif tipo == "explosion":
                 x, y = efecto["coords"]
                 self.canvas_mapa.create_oval(x-25, y-25, x+25, y+25, outline="#ff5500", width=2)
+
 
     def actualizar_paneles_tienda(self):
         for widget in self.contenedor_botones.winfo_children():
