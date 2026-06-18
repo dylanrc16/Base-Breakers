@@ -387,28 +387,38 @@ class JuegoApp:
             tx = torre.x * self.celda_size + (self.celda_size // 2)
             ty = torre.y * self.celda_size + (self.celda_size // 2)
             
+            # 1. DIBUJAR LA ESTRUCTURA (IMAGEN O EMOJI)
             fac = self.faccion_defensor
             tipo_t = getattr(torre, 'tipo_imagen', 'Torre')
             
-            #intenta dibujar el sprite desde la carpeta assets
             if fac in self.assets_imagenes and tipo_t in self.assets_imagenes[fac]:
                 self.canvas_mapa.create_image(tx, ty, image=self.assets_imagenes[fac][tipo_t])
             else:
-                #si no hay imagen, busca crear el objeto 
+                # Si es un muro, dibujamos el bloque especial
                 if tipo_t == "Muro":
-                    #Si es un muro se dibuja un bloque gris
-                    x_izq = torre.x * self.celda_size + 4
-                    y_sup = torre.y * self.celda_size + 4
-                    x_der = (torre.x + 1) * self.celda_size - 4
-                    y_inf = (torre.y + 1) * self.celda_size - 4
-
-                    self.canvas_mapa.create_rectangle(x_izq, y_sup, x_der, y_inf, fill= "#5a5a66", outline= "#8a8a98", width= 2)
-                    self.canvas_mapa.create_text(tx, ty, text="🧱", fill="#ffffff", font=("Arial", 12)) 
-
+                    # Ajustado para que el muro se vea centrado en la celda
+                    x_izq, y_sup = torre.x * self.celda_size + 8, torre.y * self.celda_size + 8
+                    x_der, y_inf = (torre.x + 1) * self.celda_size - 8, (torre.y + 1) * self.celda_size - 8
+                    self.canvas_mapa.create_rectangle(x_izq, y_sup, x_der, y_inf, fill="#5a5a66", outline="#8a8a98", width=2)
                 else:
                     self.canvas_mapa.create_oval(tx-20, ty-20, tx+20, ty+20, fill=BG_PANEL, outline=ACCENT_DEF, width=2)
                     emoji = "🏹" if isinstance(torre, TorreBasica) else "💥" if isinstance(torre, TorrePesada) else "🔮"
                     self.canvas_mapa.create_text(tx, ty, text=emoji, fill="#ffffff", font=("Arial", 14))
+
+            # 2. DIBUJAR BARRA DE VIDA (SOLO SI NO ESTÁ A VIDA LLENA PARA NO ENSUCIAR EL MAPA)
+            if torre.vida_actual < torre.vida_maxima:
+                pct_vida = max(0, torre.vida_actual / torre.vida_maxima)
+                color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
+                
+                # Posición fija relativa al centro de la celda
+                b_x1, b_y1 = tx - 20, ty + 15  # <--- SUBÍ UN POCO EL Y (de +25 a +15)
+                b_x2, b_y2 = tx + 20, ty + 19
+                
+                self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x2, b_y2, fill="#333333", outline="")
+                self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x1 + (40 * pct_vida), b_y2, fill=color_barra, outline="")
+
+
+
 
         for unidad in self.atacante_mgr.unidades_vivas:
             ux, uy = unidad.px, unidad.py
@@ -424,10 +434,20 @@ class JuegoApp:
                 self.canvas_mapa.create_text(ux, uy-2, text=emoji, fill="#ffffff", font=("Arial", 10))
 
             #barra de vida
-            pct_vida = unidad.vida_actual / unidad.vida_maxima
-            color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
-            self.canvas_mapa.create_rectangle(ux-18, uy+18, ux+18, uy+22, fill="#333333", outline="")
-            self.canvas_mapa.create_rectangle(ux-18, uy+18, ux-18 + (36 * pct_vida), uy+22, fill=color_barra, outline="")
+            
+            # 2. DIBUJAR BARRA DE VIDA (SOLO SI NO ESTÁ A VIDA LLENA PARA NO ENSUCIAR EL MAPA)
+            if unidad.vida_actual < unidad.vida_maxima:
+                pct_vida = max(0, unidad.vida_actual / unidad.vida_maxima)
+                color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
+                
+                # Posición fija relativa al centro de la celda
+                b_x1, b_y1 = ux - 20, ty + 15  # <--- SUBÍ UN POCO EL Y (de +25 a +15)
+                b_x2, b_y2 = ux + 20, ty + 19
+                
+                self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x2, b_y2, fill="#333333", outline="")
+                self.canvas_mapa.create_rectangle(b_x1, b_y1, b_x1 + (40 * pct_vida), b_y2, fill=color_barra, outline="")
+
+
 
         for efecto in self.efectos_visuales:
             tipo = efecto["tipo"]
