@@ -93,8 +93,10 @@ class Muros(Defensa):
 
         super().__init__(
             nombre= "Muro Defensivo", costo= 50, vida= 200, daño= 0, alcance= 0,
-            habilidad= "", turnos_habilidad= 0, x=x, y=y, faccion_visual= faccion_visual
+            habilidad= "Ninguna", turnos_habilidad= 0, x=x, y=y, faccion_visual= faccion_visual
         )
+    def usar_habilidad(self):
+        pass
 
 
 
