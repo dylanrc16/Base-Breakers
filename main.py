@@ -296,7 +296,7 @@ class JuegoApp:
 
         # --- Cargar la imagen de la base central ---
         if self.img_base_central is None: 
-            ruta_base = os.path.join("assets", "Base.png")
+            ruta_base = os.path.join("assets", "main", "Base.png")
             try:
                 if os.path.exists(ruta_base):
                     img_grande = tk.PhotoImage(file=ruta_base)
