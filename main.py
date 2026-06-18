@@ -240,54 +240,68 @@ class JuegoApp:
 
         self.assets_imagenes = {}
         # Cargamos explícitamente la facción que arranca construyendo
-        self.cargar_assets_imagenes()
+        self.cargar_assets_imagenes("defensa")
 
         self.efectos_visuales = [] 
 
         self.crear_interfaz()
         self.actualizar_paneles_tienda()
 
-    def seleccionar_faccion(self, nombre_fac):
+    def seleccionar_faccion(self, nombre_fac, modo = "defensa"):
         if nombre_fac in self.facciones_disponibles:
             self.faccion_seleccionada = nombre_fac
             
-            self.cargar_assets_imagenes()
+            self.cargar_assets_imagenes(modo)
         
-    def cargar_assets_imagenes(self):
-        """Carga los archivos de la facción actual seleccionada incluyendo muros."""
+    def cargar_assets_imagenes(self, tipo_carpeta):
+        """Carga los archivos de la facción actual seleccionada incluyendo muros.
+        tipo_carpeta = defensa o ataque
+        """
         if not self.faccion_seleccionada:
             return
 
-        tipos_defensas = ["Torre", "Mortero", "Ballesta", "Muro"]
+        
         faccion = self.faccion_seleccionada
-        self.assets_imagenes[faccion] = {}
+        if faccion not in self.assets_imagenes:
+            self.assets_imagenes [faccion] = {}
+        
+        
+        if tipo_carpeta == "defensa":
+            items = ["Torre", "Mortero", "Ballesta", "Muro"]
+        else: #carpeta de ataque
+            items = ["Soldado", "Tanque", "UnidadRapida"]
 
-        for tipo in tipos_defensas:
-            nombre_archivo = f"{tipo} {faccion}.png"
-            ruta_completa = os.path.join("assets", "assets de defensa", nombre_archivo)
-                
+        
+
+        for item in items:
+            nombre_archivo = f"{item} {faccion}.png"
+
+            ruta_carpeta = f"assets de {tipo_carpeta}" 
+            ruta_completa = os.path.join("assets", ruta_carpeta, nombre_archivo)
+            
+                #*
             try:
                 if os.path.exists(ruta_completa):
                     img_original = tk.PhotoImage(file=ruta_completa)
                     
                     # === TRUCO DE REESCALADO PARA EL MURO ===
-                    if tipo == "Muro":
+                    if item == "Muro":
                         # Modifica estos números si lo quieres aún más pequeño (ej: 3, 3 o 4, 4)
-                        self.assets_imagenes[faccion][tipo] = img_original.subsample(2, 2)
+                        self.assets_imagenes[faccion][item] = img_original.subsample(2, 2)
                     else:
-                        self.assets_imagenes[faccion][tipo] = img_original
+                        self.assets_imagenes[faccion][item] = img_original
                         
                     print(f"✅ Asset cargado: {ruta_completa}")
                 else:
                     # Fallback minúsculas
-                    nombre_minuscula = f"{tipo.lower()} {faccion.lower()}.png"
+                    nombre_minuscula = f"{item.lower()} {faccion.lower()}.png"
                     ruta_minuscula = os.path.join("assets", "assets de defensa", nombre_minuscula)
                     if os.path.exists(ruta_minuscula):
                         img_original = tk.PhotoImage(file=ruta_minuscula)
-                        if tipo == "Muro":
-                            self.assets_imagenes[faccion][tipo] = img_original.subsample(2, 2)
+                        if item == "Muro":
+                            self.assets_imagenes[faccion][item] = img_original.subsample(2, 2)
                         else:
-                            self.assets_imagenes[faccion][tipo] = img_original
+                            self.assets_imagenes[faccion][item] = img_original
                         print(f"✅ Asset cargado (fallback): {ruta_minuscula}")
                     else:
                         print(f"⚠️ Archivo no encontrado: {ruta_completa}")
@@ -398,10 +412,18 @@ class JuegoApp:
 
         for unidad in self.atacante_mgr.unidades_vivas:
             ux, uy = unidad.px, unidad.py
-            self.canvas_mapa.create_oval(ux-15, uy-15, ux+15, uy+15, fill="#2a1415", outline=ACCENT_ATK, width=2)
-            emoji = "🪖" if isinstance(unidad, Soldado) else "🛡️" if isinstance(unidad, Tanque) else "⚡"
-            self.canvas_mapa.create_text(ux, uy-2, text=emoji, fill="#ffffff", font=("Arial", 10))
+            fac = self.faccion_atacante
+            tipo_u = unidad.__class__.__name__ #obtengo el nombre de la clase: soldado, tanque...
+
+            if fac in self.assets_imagenes and tipo_u in self.assets_imagenes[fac]:
+                self.canvas_mapa.create_image(ux, uy, image = self.assets_imagenes[fac][tipo_u])
             
+            else:
+                self.canvas_mapa.create_oval(ux-15, uy-15, ux+15, uy+15, fill="#2a1415", outline=ACCENT_ATK, width=2)
+                emoji = "🪖" if isinstance(unidad, Soldado) else "🛡️" if isinstance(unidad, Tanque) else "⚡"
+                self.canvas_mapa.create_text(ux, uy-2, text=emoji, fill="#ffffff", font=("Arial", 10))
+
+            #barra de vida
             pct_vida = unidad.vida_actual / unidad.vida_maxima
             color_barra = "#28a745" if pct_vida > 0.5 else "#ffc107" if pct_vida > 0.2 else "#dc3545"
             self.canvas_mapa.create_rectangle(ux-18, uy+18, ux+18, uy+22, fill="#333333", outline="")
@@ -498,10 +520,15 @@ class JuegoApp:
         if self.fase_actual == "CONSTRUCCION":
             self.fase_actual = "ATAQUE"
             self.clase_seleccionada = None
+            self.faccion_seleccionada = self.faccion_atacante
+            self.cargar_assets_imagenes("ataque")
+            self.actualizar_paneles_tienda()
+            self.dibujar_escenario()
             # IMPORTANTE: Al pasar a la fase de ataque, cargamos los assets de esa facción en memoria
             self.seleccionar_faccion(self.faccion_atacante)
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()
+
         elif self.fase_actual == "ATAQUE":
             if not self.atacante_mgr.unidades_vivas: return
             self.fase_actual = "COMBATE"
