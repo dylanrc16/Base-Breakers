@@ -250,11 +250,9 @@ class JuegoApp:
     def seleccionar_faccion(self, nombre_fac):
         if nombre_fac in self.facciones_disponibles:
             self.faccion_seleccionada = nombre_fac
-            print(f"Facción cambiada en memoria a: {self.faccion_seleccionada}")
+            
             self.cargar_assets_imagenes()
-        else:
-            print("Esa facción no existe.")
-
+        
     def cargar_assets_imagenes(self):
         """Carga los archivos de la facción actual seleccionada."""
         if not self.faccion_seleccionada:
@@ -267,39 +265,31 @@ class JuegoApp:
         for tipo in tipos_torres:
             nombre_archivo = f"{tipo} {faccion}.png"
             ruta_completa = os.path.join("assets", "assets de defensa", nombre_archivo)
-                
-            try:
-                if os.path.exists(ruta_completa):
-                    self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_completa)
-                    print(f"✅ Asset cargado: {ruta_completa}")
-                else:
-                    # Fallback minúsculas corregido
-                    nombre_minuscula = f"{tipo.lower()} {faccion.lower()}.png"
-                    ruta_minuscula = os.path.join("assets", "assets de defensa", nombre_minuscula)
-                    if os.path.exists(ruta_minuscula):
-                        self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_minuscula)
-                        print(f"✅ Asset cargado (fallback): {ruta_minuscula}")
-                    else:
-                        print(f"⚠️ Archivo no encontrado: {ruta_completa}")
-            except Exception as e:
-                print(f"❌ Error cargando {ruta_completa}: {e}")
+            if os.path.exists(ruta_completa):
+                self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_completa)
+                   
+            else:
+                # Fallback minúsculas corregido
+                nombre_minuscula = f"{tipo.lower()} {faccion.lower()}.png"
+                ruta_minuscula = os.path.join("assets", "assets de defensa", nombre_minuscula)
+                if os.path.exists(ruta_minuscula):
+                    self.assets_imagenes[faccion][tipo] = tk.PhotoImage(file=ruta_minuscula)
+            
+            
 
         # --- AGREGADO: Cargar la imagen de la base central ---
         if self.img_base_central is None: # Para cargarla solo una vez
             ruta_base = os.path.join("assets", "Base.png")
-            try:
-                if os.path.exists(ruta_base):
-                    # Cargamos la imagen original
-                    img_grande = tk.PhotoImage(file=ruta_base)
+            if os.path.exists(ruta_base):
+                # Cargamos la imagen original
+                img_grande = tk.PhotoImage(file=ruta_base)
                     
-                    # TRUCO: Si la imagen mide por ejemplo 550x550, la dividimos entre 10 
-                    # para que quede de 55x55 píxeles. Ajustá el número según qué tan grande sea.
-                    self.img_base_central = img_grande.subsample(10, 10) 
-                    print(f"✅ Asset de Base Central cargado y reescalado: {ruta_base}")
-                else:
-                    print(f"⚠️ No se encontró la imagen de la base en: {ruta_base}. Se usará el rectángulo de respaldo.")
-            except Exception as e:
-                print(f"❌ Error al cargar la imagen de la base: {e}")
+                # TRUCO: Si la imagen mide por ejemplo 550x550, la dividimos entre 10 
+                # para que quede de 55x55 píxeles. Ajustá el número según qué tan grande sea.
+                self.img_base_central = img_grande.subsample(10, 10) 
+                    
+        
+
 
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
@@ -426,13 +416,24 @@ class JuegoApp:
             self.lbl_seccion.config(text="⚔️ EN BATALLA...", fg="#ffaa00")
             self.btn_fase.config(text="SIMULANDO... ⏳", bg="#44444a", fg="#aaaaaa", state="disabled")
             
+
             # --- AGREGADO: BOTÓN DE ACTIVACIÓN DE HABILIDADES DURANTE COMBATE ---
             btn_habilidades = tk.Button(
-                self.contenedor_botones, text="⚡ HABILIDADES ESPECIALES ⚡", 
+                self.contenedor_botones, text="⚔️ HABILIDADES ATAQUE ⚔️", 
                 bg=ACCENT_HAB, fg="#ffffff", font=("Segoe UI", 11, "bold"), 
                 relief="flat", pady=12, command=self.activar_habilidades_atacante
             )
-            btn_habilidades.pack(fill="x", pady=20)
+            btn_habilidades.pack(fill="x", pady=(20, 5))  # Separación inferior pequeña
+
+            # --- NUEVO BOTÓN: HABILIDADES DEFENSIVAS (MISMO ESTILO) ---
+            btn_habilidades_defensa = tk.Button(
+                self.contenedor_botones, text="🛡️ HABILIDADES DEFENSIVAS 🛡️", 
+                bg="#34495E",  # Un gris oscuro azulado para diferenciarlo del morado
+                fg="#ffffff", font=("Segoe UI", 11, "bold"), 
+                relief="flat", pady=12, command=self.activar_habilidades_defensor
+            )
+            btn_habilidades_defensa.pack(fill="x", pady=(5, 20))  # Margen para separarlo de lo que siga abajo
+            
 
     def seleccionar_objeto(self, clase):
         self.clase_seleccionada = clase
@@ -473,16 +474,29 @@ class JuegoApp:
             self.cooldown_ataque_torres = 0 
             self.ejecutar_game_loop()
 
+
+
     # --- AGREGADO: NUEVA FUNCIÓN PARA DISPARAR LAS HABILIDADES EN EL LOOP ---
     def activar_habilidades_atacante(self):
         """Recorre las unidades en batalla y ejecuta sus comportamientos especiales."""
         if not self.atacante_mgr.unidades_vivas:
             return
 
-        for unidad in self.atacante_mgr.unidades_vivas:
+        for unidad in self.atacante_mgr.unidades_vivas: #atacante_mrg variable de AtacanteManager
             unidad.usar_habilidad()
+
+
+    # --- FUNCIÓN PARA EL BOTÓN DE HABILIDADES DEL DEFENSOR (IGUAL A LA OTRA) ---
+    def activar_habilidades_defensor(self):
+        """Recorre las torres en batalla y ejecuta sus comportamientos especiales."""
+        if not self.defensor_mgr.defensas_colocadas:
+            return
+
+        for torre in self.defensor_mgr.defensas_colocadas:
+            torre.usar_habilidad()
             
-        print("⚡ ¡Sistemas de combate al límite! Habilidades del atacante desplegadas.")
+        
+
 
     def ejecutar_game_loop(self):
         if self.fase_actual != "COMBATE": return
