@@ -268,6 +268,16 @@ class JuegoApp:
         
         if tipo_carpeta == "defensa":
             items = ["Torre", "Mortero", "Ballesta", "Muro"]
+
+
+            nombre_base = f"Base {faccion}.png"
+            #buscamos la base en la carpeta assets-main
+            ruta_base = os.path.join("assets", "main", nombre_base)
+            if os.path.exists(ruta_base):
+                    img_grande = tk.PhotoImage(file=ruta_base)
+                    # reescalamos 10x10 por la alta resolución de las imágenes nuevas
+                    self.img_base_central = img_grande.subsample(10, 10)
+
         else: #carpeta de ataque
             items = ["Soldado", "Tanque", "UnidadRapida"]
 
@@ -291,7 +301,6 @@ class JuegoApp:
                     else:
                         self.assets_imagenes[faccion][item] = img_original
                         
-                    print(f"✅ Asset cargado: {ruta_completa}")
                 else:
                     # Fallback minúsculas
                     nombre_minuscula = f"{item.lower()} {faccion.lower()}.png"
@@ -302,23 +311,12 @@ class JuegoApp:
                             self.assets_imagenes[faccion][item] = img_original.subsample(2, 2)
                         else:
                             self.assets_imagenes[faccion][item] = img_original
-                        print(f"✅ Asset cargado (fallback): {ruta_minuscula}")
-                    else:
-                        print(f"⚠️ Archivo no encontrado: {ruta_completa}")
+                       
+                    
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
 
-        # --- Cargar la imagen de la base central ---
-        if self.img_base_central is None: 
-            ruta_base = os.path.join("assets", "main", "Base.png")
-            try:
-                if os.path.exists(ruta_base):
-                    img_grande = tk.PhotoImage(file=ruta_base)
-                    self.img_base_central = img_grande.subsample(10, 10) 
-                    print(f"✅ Asset de Base Central cargado y reescalado")
-            except Exception as e:
-                print(f"❌ Error al cargar la imagen de la base: {e}")
-
+       
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${self.defensor_mgr.dinero}", fg=ACCENT_DEF)
