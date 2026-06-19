@@ -161,21 +161,29 @@ class Ventana_facciones:
         self.assets_ui = {}
         self.crear_widgets()
     
+
     def cargar_assets_ui(self):
-        """Carga las imágenes de vista previa usando solo tkinter."""
         self.assets_ui = {}
-        nombres = ["Nordica", "Magica", "Futurista"]
+        nombres = ["Nordica", "Magica", "Futuristica"]
+        
+        # Obtenemos la ruta absoluta de la carpeta donde está este script
+        base_dir = os.path.dirname(os.path.abspath(__file__))
         
         for nombre in nombres:
-            # Asegurate que tus archivos se llamen exactamente así en assets/interfaz/
-            ruta = f"assets/interfaz/vista_{nombre.lower()}.png"
-            try:
-                # tkinter puede cargar PNGs directamente
-                self.assets_ui[nombre] = tk.PhotoImage(file=ruta)
-                print(f"✅ Imagen cargada: {nombre}")
-            except Exception as e:
-                print(f"Error cargando {ruta}: {e}. Asegurate que sea un PNG válido.")
-
+            # Construimos la ruta uniendo las carpetas de forma segura
+            ruta = os.path.join(base_dir, "assets", "interfaz", f"vista_{nombre.lower()}.png")
+            
+            print(f"Buscando en: {ruta}") # ¡Esto nos dirá exactamente dónde busca!
+            
+            if os.path.exists(ruta):
+                try:
+                    self.assets_ui[nombre] = tk.PhotoImage(file=ruta)
+                    print(f"✅ ¡Éxito! Cargada: {nombre}")
+                except Exception as e:
+                    print(f"❌ Error al procesar {nombre}: {e}")
+            else:
+                print(f"❌ ERROR: No existe el archivo en {ruta}")
+                
     def crear_widgets(self):
 
         #cargo las imagenes para la previa
@@ -187,7 +195,9 @@ class Ventana_facciones:
         frame_opciones.pack(fill="both", expand=True, padx=20)
 
         #frame para radiobuttons del defensor
-        frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ",
+                                        fg="#00ffcc", bg="#1a1a1e",
+                                        font=("Segoe UI", 10, "bold"), padx=10, pady=10)
         frame_defensor.pack(side="left", fill="both", expand=True, padx=10)
 
 
@@ -196,7 +206,7 @@ class Ventana_facciones:
         frame_previa.pack(side="left", fill="both", padx=10)
         
         tk.Label(frame_previa, text="Vista Previa", fg="white", bg="#121214").pack()
-        self.label_preview = tk.Label(frame_previa, bg="#000000", borderwidth=2, relief="groove")
+        self.label_preview = tk.Label(frame_previa, bg="#000000", borderwidth=2, relief="groove", width= 200, height= 150)
         self.label_preview.pack(pady=10)
 
         #frame para radiobuttons atacante
@@ -204,12 +214,7 @@ class Ventana_facciones:
         frame_atacante = tk.LabelFrame(frame_opciones, text=f" ⚔️ ATACANTE ({self.jugador2}) ", fg="#ff3e3e", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
         frame_atacante.pack(side="right", fill="both", expand=True, padx=10)
 
-        #funcion para actualizar la imagen
-        def actualizar_previa(*args):
-            fac = self.faccion_defensor.get()
-            if fac in self.assets_ui:
-                self.label_preview.config(image=self.assets_ui[fac])
-
+    
 
         facciones_disponibles = [
             ("Nórdica", "Nordica"),
@@ -217,21 +222,40 @@ class Ventana_facciones:
             ("Futurista", "Futuristica")
         ]
 
-        #botones defensor
+
+# Definí la función aquí arriba para que ambos grupos la vean
+# 1. Definimos la función para que ACEPTE el argumento 'jugador'
+        def actualizar_previa(jugador):
+            # Ahora 'jugador' sí existe porque lo pasas desde el command
+            if jugador == "defensor":
+                fac = self.faccion_defensor.get()
+            else:
+                fac = self.faccion_atacante.get()
+
+            if fac in self.assets_ui:
+                img = self.assets_ui[fac]
+                self.label_preview.config(image=img)
+                self.label_preview.image = img 
+                print(f"🖼️ Mostrando imagen de: {fac}")
+            else:
+                print(f"⚠️ No encontré imagen para: {fac}")
+
+        # BOTONES DEFENSOR
         for texto, valor in facciones_disponibles:
             tk.Radiobutton(frame_defensor, text=texto, variable=self.faccion_defensor, value=valor,
-                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e",
-                           activeforeground="#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
+                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", 
+                           command=lambda:actualizar_previa("defensor")).pack(anchor="w", pady=8) # <--- AÑADÍ ESTO
         
-
-        #botones atacante
+        # BOTONES ATACANTE
         for texto, valor in facciones_disponibles:
             tk.Radiobutton(frame_atacante, text=texto, variable=self.faccion_atacante, value=valor,
-                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e", activeforeground="#ffffff",
-                           font=("Segoe UI", 9)).pack(anchor="w", pady=8)
+                           bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", 
+                           command= lambda: actualizar_previa("atacante")).pack(anchor="w", pady=8) # <--- AÑADÍ ESTO
             
         tk.Button(self.root, text="CONFIRMAR Y ENTRAR AL CAMPO DE BATALLA ➔", bg="#00ffd0", fg="#000000",
                   font=("Segoe UI", 11, "bold"), relief="flat", padx=15, pady=8, command=self.validar_seleccion).pack(pady=25)
+
+
 
     def validar_seleccion(self):
         frame_atacante = self.faccion_atacante.get()
