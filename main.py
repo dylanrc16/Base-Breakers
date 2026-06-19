@@ -366,7 +366,6 @@ class JuegoApp:
     def dibujar_escenario(self):
         self.canvas_mapa.delete("all")
         
-                except Exception as e:
         for i in range(self.filas + 1):
             self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#24242b")
             self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#24242b")
