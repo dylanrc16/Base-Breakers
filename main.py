@@ -836,15 +836,30 @@ class JuegoApp:
             self.root.after(33, self.ejecutar_game_loop)
 
     def reiniciar_partida(self):
+        # Guardamos la vida real con la que terminó la ronda antes de borrarla
+        vida_final = self.vida_base
+        
+        # Calculamos el daño exacto que recibió la base (de 0 a 500)
+        daño_recibido = 500 - vida_final
+
+        # Ahora sí, reseteamos los valores de la partida para la nueva ronda
         self.vida_base = 500
         self.defensor_mgr.defensas_colocadas = []
         self.atacante_mgr.unidades_vivas = []
         self.efectos_visuales = []
 
-        #bono de dinero dependiendo de rendimiento en la ronda
         oro_base = 500 
-        self.defensor_mgr.dinero = oro_base + (150 if self.vida_base > 0 else 0) #bono al defensor si defendió
-        self.atacante_mgr.dinero = oro_base + (150 if self.vida_base <= 0 else 0) #bono al atacante si destruyó la base
+        
+        # BONOS DINÁMICOS POR RENDIMIENTO:
+        # El defensor gana un extra por cada punto de vida que logró salvar
+        bono_defensor = oro_base + vida_final
+        
+        # El atacante gana un extra por cada punto de daño que logró infligir
+        bono_atacante = oro_base + daño_recibido
+        
+        # Sumamos el dinero a los acumuladores
+        self.defensor_mgr.dinero += bono_defensor 
+        self.atacante_mgr.dinero += bono_atacante 
         
         self.fase_actual = "CONSTRUCCION"
 
