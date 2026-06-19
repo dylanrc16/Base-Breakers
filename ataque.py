@@ -1,8 +1,9 @@
 # ataque.py
+import time
 
 class Unidad:
     """Clase Padre para todas las unidades atacantes."""
-    def __init__(self, nombre, costo, vida, daño, velocidad, habilidad, turnos_habilidad, x, y, faccion_visual):
+    def __init__(self, nombre, costo, vida, daño, velocidad, habilidad, x, y, faccion_visual):
         self.nombre = nombre
         self.costo = costo
         self.vida_maxima = vida
@@ -10,9 +11,10 @@ class Unidad:
         self.daño = daño
         self.velocidad = velocidad  
         self.habilidad = habilidad
-        self.turnos_habilidad = turnos_habilidad
-        self.contador_turnos = 0
-        self.habilidad_activa = False  # <--- Este flag controla si YA se usó en la partida
+
+        self.tiempo_habilidad = time.time()
+        self.habilidad_disponible = False
+        self.habilidad_activa = False
         self.x = x
         self.y = y
         self.faccion_visual = faccion_visual
@@ -40,7 +42,7 @@ class Soldado(Unidad):
     def __init__(self, x, y, faccion_visual):
         super().__init__(
             nombre="Soldado", costo=80, vida=150, daño=20, velocidad=1,
-            habilidad="Escudo Temporal", turnos_habilidad=3,
+            habilidad="Escudo Temporal",
             x=x, y=y, faccion_visual=faccion_visual
         )
 
@@ -57,7 +59,7 @@ class Tanque(Unidad):
     def __init__(self, x, y, faccion_visual):
         super().__init__(
             nombre="Tanque", costo=200, vida=450, daño=40, velocidad=0.5,
-            habilidad="Daño Extra contra Torres", turnos_habilidad=2,
+            habilidad="Daño Extra contra Torres", 
             x=x, y=y, faccion_visual=faccion_visual
         )
 
@@ -73,7 +75,7 @@ class UnidadRapida(Unidad):
     def __init__(self, x, y, faccion_visual):
         super().__init__(
             nombre="Unidad Rápida", costo=100, vida=100, daño=15, velocidad=2,
-            habilidad="Aumento de Velocidad", turnos_habilidad=3,
+            habilidad="Aumento de Velocidad", 
             x=x, y=y, faccion_visual=faccion_visual
         )
 

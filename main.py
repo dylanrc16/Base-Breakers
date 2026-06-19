@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import math
+import time
 import random
 import os
 import usuarios
@@ -508,6 +509,7 @@ class JuegoApp:
 
 
     def actualizar_paneles_tienda(self):
+
         for widget in self.contenedor_botones.winfo_children():
             widget.destroy()
 
@@ -541,22 +543,58 @@ class JuegoApp:
             
 
             # --- AGREGADO: BOTÓN DE ACTIVACIÓN DE HABILIDADES DURANTE COMBATE ---
-            btn_habilidades = tk.Button(
+            btn_habilidades_ataque = tk.Button(
                 self.contenedor_botones, text="⚔️ HABILIDADES ATAQUE ⚔️", 
                 bg=ACCENT_HAB, fg="#ffffff", font=("Segoe UI", 11, "bold"), 
-                relief="flat", pady=12, command=self.activar_habilidades_atacante
+                relief="flat", pady=12, command=self.activar_habilidades_atacante, name = "btn_ataque"
             )
-            btn_habilidades.pack(fill="x", pady=(20, 5))  # Separación inferior pequeña
+            btn_habilidades_ataque.pack(fill="x", pady=(20, 5))  # Separación inferior pequeña
 
             # --- NUEVO BOTÓN: HABILIDADES DEFENSIVAS (MISMO ESTILO) ---
             btn_habilidades_defensa = tk.Button(
                 self.contenedor_botones, text="🛡️ HABILIDADES DEFENSIVAS 🛡️", 
                 bg="#34495E",  # Un gris oscuro azulado para diferenciarlo del morado
                 fg="#ffffff", font=("Segoe UI", 11, "bold"), 
-                relief="flat", pady=12, command=self.activar_habilidades_defensor
+                relief="flat", pady=12, command=self.activar_habilidades_defensor, name = "btn_defensa"
             )
             btn_habilidades_defensa.pack(fill="x", pady=(5, 20))  # Margen para separarlo de lo que siga abajo
             
+
+
+    def actualizar_cooldown_habilidades(self):
+        # 1. Primero revisamos si los botones YA existen dentro de los hijos del contenedor
+        if "btn_ataque" not in self.contenedor_botones.children or "btn_defensa" not in self.contenedor_botones.children:
+            # Si no se han creado todavía, esperamos 1 segundo y volvemos a revisar
+            self.root.after(1000, self.actualizar_cooldown_habilidades)
+            return
+
+        # 2. Si ya existen, ahora sí los llamamos de forma segura
+        btn_atk = self.contenedor_botones.nametowidget("btn_ataque")
+        btn_def = self.contenedor_botones.nametowidget("btn_defensa")
+
+        if self.tiempo_habilidades > 0:
+
+            btn_atk.config(
+                text=f"⚔ HABILIDADES ATAQUE ({self.tiempo_habilidades}s)"
+            )
+
+            btn_def.config(
+                text=f"🛡 HABILIDADES DEFENSIVAS ({self.tiempo_habilidades}s)"
+            )
+
+            self.tiempo_habilidades -= 1
+
+            self.root.after(1000, self.actualizar_cooldown_habilidades)
+
+        else:
+
+            btn_atk.config(
+                text="⚔ HABILIDADES ATAQUE ✓"
+            )
+
+            btn_def.config(
+                text="🛡 HABILIDADES DEFENSIVAS ✓"
+            )
 
     def seleccionar_objeto(self, clase):
         self.clase_seleccionada = clase
@@ -597,6 +635,8 @@ class JuegoApp:
         elif self.fase_actual == "ATAQUE":
             if not self.atacante_mgr.unidades_vivas: return
             self.fase_actual = "COMBATE"
+            self.tiempo_habilidades = 8
+            self.actualizar_cooldown_habilidades()
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()
             self.cooldown_ataque_torres = 0 
@@ -606,11 +646,17 @@ class JuegoApp:
 
     # --- AGREGADO: NUEVA FUNCIÓN PARA DISPARAR LAS HABILIDADES EN EL LOOP ---
     def activar_habilidades_atacante(self):
-        """Recorre las unidades en batalla y ejecuta sus comportamientos especiales."""
         if not self.atacante_mgr.unidades_vivas:
             return
 
-        for unidad in self.atacante_mgr.unidades_vivas: #atacante_mrg variable de AtacanteManager
+        for unidad in self.atacante_mgr.unidades_vivas:
+
+            if not unidad.habilidad_disponible:
+                continue
+
+            if unidad.habilidad_activa:
+                continue
+
             unidad.usar_habilidad()
 
 
@@ -634,6 +680,16 @@ class JuegoApp:
         base_py = by * self.celda_size + (self.celda_size // 2)
 
         self.efectos_visuales = []
+
+        for unidad in self.atacante_mgr.unidades_vivas:
+            if (not unidad.habilidad_disponible and
+                time.time() - unidad.tiempo_habilidad >= 5):
+                unidad.habilidad_disponible = True
+
+        for defensa in self.defensor_mgr.defensas_colocadas:
+            if (not defensa.habilidad_disponible and
+                time.time() - defensa.tiempo_habilidad >= 5):
+                defensa.habilidad_disponible = True
 
         # 1. MOVIMIENTO Y ATAQUE CONTINUO (UNIDADES VS DEFENSAS)
         for unidad in self.atacante_mgr.unidades_vivas:

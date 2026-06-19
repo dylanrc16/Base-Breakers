@@ -1,8 +1,9 @@
 # defensor.py
+import time
 
 class Defensa:
     """Clase Padre para todas las estructuras defensivas."""
-    def __init__(self, nombre, costo, vida, daño, alcance, habilidad, turnos_habilidad, x, y, faccion_visual):
+    def __init__(self, nombre, costo, vida, daño, alcance, habilidad, x, y, faccion_visual):
         self.nombre = nombre
         self.costo = costo
         self.vida_maxima = vida
@@ -10,9 +11,10 @@ class Defensa:
         self.daño = daño
         self.alcance = alcance
         self.habilidad = habilidad
-        self.turnos_habilidad = turnos_habilidad
+       
+        self.tiempo_habilidad = time.time()
+        self.habilidad_disponible = False
         self.habilidad_activa = False
-        self.contador_turnos = 0
         self.x = x
         self.y = y
         self.faccion_visual = faccion_visual
@@ -37,7 +39,7 @@ class TorreBasica(Defensa):
         # Daño normal y costo bajo
         super().__init__(
             nombre="Torre Básica", costo=100, vida=300, daño=25, alcance=2,
-            habilidad="Disparo Doble", turnos_habilidad=2, 
+            habilidad="Disparo Doble", 
             
             x=x, y=y, faccion_visual=faccion_visual
         )
@@ -56,7 +58,7 @@ class TorrePesada(Defensa):
         # Mucha vida y daño alto, pero costo elevado
         super().__init__(
             nombre="Torre Pesada", costo=250, vida=600, daño=60, alcance=3,
-            habilidad="Daño en Área", turnos_habilidad=4, 
+            habilidad="Daño en Área",
             x=x, y=y, faccion_visual=faccion_visual
         )
     
@@ -76,7 +78,7 @@ class TorreMagica(Defensa):
         # Daño bajo, pero habilidad especial fuerte
         super().__init__(
             nombre="Torre Mágica", costo=200, vida=250, daño=15, alcance=4,
-            habilidad="Amplificacion", turnos_habilidad=3, 
+            habilidad="Amplificacion", 
             x=x, y=y, faccion_visual=faccion_visual
         )
     
@@ -93,7 +95,7 @@ class Muros(Defensa):
 
         super().__init__(
             nombre= "Muro Defensivo", costo= 50, vida= 200, daño= 0, alcance= 0,
-            habilidad= "Ninguna", turnos_habilidad= 0, x=x, y=y, faccion_visual= faccion_visual
+            habilidad= "Ninguna", x=x, y=y, faccion_visual= faccion_visual
         )
     def usar_habilidad(self):
         pass
