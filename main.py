@@ -158,8 +158,24 @@ class Ventana_facciones:
         self.faccion_defensor = tk.StringVar(value="hola Gabo")
         self.faccion_atacante = tk.StringVar(value="hola Gabo")
 
+        self.assets_ui = {}
         self.crear_widgets()
+    
+    def cargar_assets_ui(self):
+        """Carga las imágenes de vista previa usando solo tkinter."""
+        self.assets_ui = {}
+        nombres = ["Nordica", "Magica", "Futurista"]
         
+        for nombre in nombres:
+            # Asegurate que tus archivos se llamen exactamente así en assets/interfaz/
+            ruta = f"assets/interfaz/vista_{nombre.lower()}.png"
+            try:
+                # tkinter puede cargar PNGs directamente
+                self.assets_ui[nombre] = tk.PhotoImage(file=ruta)
+                print(f"✅ Imagen cargada: {nombre}")
+            except Exception as e:
+                print(f"Error cargando {ruta}: {e}. Asegurate que sea un PNG válido.")
+
     def crear_widgets(self):
 
         #cargo las imagenes para la previa
@@ -207,6 +223,7 @@ class Ventana_facciones:
                            bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e",
                            activeforeground="#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
         
+
         #botones atacante
         for texto, valor in facciones_disponibles:
             tk.Radiobutton(frame_atacante, text=texto, variable=self.faccion_atacante, value=valor,
@@ -343,20 +360,6 @@ class JuegoApp:
                     
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
-
-    def cargar_assets_ui(self):
-        """Carga las imágenes de vista previa usando solo tkinter."""
-        self.assets_ui = {}
-        nombres = ["Nordica", "Magica", "Futurista"]
-        
-        for nombre in nombres:
-            # Asegurate que tus archivos se llamen exactamente así en assets/interfaz/
-            ruta = f"assets/interfaz/vista_{nombre.lower()}.png"
-            try:
-                # tkinter puede cargar PNGs directamente
-                self.assets_ui[nombre] = tk.PhotoImage(file=ruta)
-            except Exception as e:
-                print(f"Error cargando {ruta}: {e}. Asegurate que sea un PNG válido.")
 
 
     def actualizar_labels_oro(self):
