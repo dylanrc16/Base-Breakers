@@ -366,11 +366,57 @@ class JuegoApp:
         # 1. LIMPIAR EL CANVAS ANTES DE VOLVER A PINTAR
         self.canvas_mapa.delete("all")
         
+
+         # =========================================================================
+        # 🏞️ 2. DIBUJAR EL NUEVO FONDO NÓRDICO NEVADO (CENTRADO)
+        # =========================================================================
+        # Guardá la imagen nueva que te mandé en: assets/main/Fondo_Mapa.png
+        ruta_fondo = os.path.join("assets", "main", "Fondo_Mapa.png")
+        
+        ruta_fondo = os.path.join("assets", "main", "Fondo_Mapa.png")
+        
+        if not hasattr(self, 'img_fondo_terreno') or self.img_fondo_terreno is None:
+            if os.path.exists(ruta_fondo):
+                try:
+                    img_original = tk.PhotoImage(file=ruta_fondo)
+                    
+                    ancho_orig = img_original.width()
+                    alto_orig = img_original.height()
+                    
+                    # Calculamos las esquinas del cuadro de 600x600 del puro centro
+                    x1 = (ancho_orig - 600) // 2
+                    y1 = (alto_orig - 600) // 2
+                    x2 = x1 + 600
+                    y2 = y1 + 600
+                    
+                    # Creamos el contenedor destino vacío de 600x600
+                    self.img_fondo_terreno = tk.PhotoImage(width=600, height=600)
+                    
+                    # 👈 SOLUCIÓN AL ERROR: Usamos una llamada directa a Tcl que no falla con los argumentos
+                    self.canvas_mapa.tk.call(self.img_fondo_terreno, 'copy', img_original, 
+                                             '-from', x1, y1, x2, y2, 
+                                             '-to', 0, 0)
+                    
+                    print("🌲 Fondo Nórdico recortado exitosamente a 600x600 píxeles.")
+
+
                 except Exception as e:
+
+                    print(f"❌ Error al procesar o recortar Fondo_Mapa.png: {e}")
+                    self.img_fondo_terreno = None
+
+        if self.img_fondo_terreno:
+            self.canvas_mapa.create_image(300, 300, image=self.img_fondo_terreno)
+
+          # =========================================================================
+        # 📐 3. CUADRÍCULA ESTILO CLASH (PUNTEADA Y SUAVE)
+        # =========================================================================
+        # Usamos líneas discontinuas ("dash") blancas para que calce bien con el ambiente de nieve
         for i in range(self.filas + 1):
             self.canvas_mapa.create_line(0, i * self.celda_size, self.columnas * self.celda_size, i * self.celda_size, fill="#ffffff", dash=(2, 4))
             self.canvas_mapa.create_line(i * self.celda_size, 0, i * self.celda_size, self.filas * self.celda_size, fill="#ffffff", dash=(2, 4))
-        
+
+
         # =========================================================================
         # 🏢 4. BASE CENTRAL
         # =========================================================================
