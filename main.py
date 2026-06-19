@@ -159,29 +159,55 @@ class Ventana_facciones:
         self.faccion_atacante = tk.StringVar(value="hola Gabo")
 
         self.crear_widgets()
-
+        
     def crear_widgets(self):
+
+        #cargo las imagenes para la previa
+        self.cargar_assets_ui()
+
         tk.Label(self.root, text="⚔️ ELIJAN SUS FACCIONES ⚔️", font=("Impact", 18), fg="#ffd700", bg="#121214").pack(pady=15)
 
         frame_opciones = tk.Frame(self.root, bg="#121214")
         frame_opciones.pack(fill="both", expand=True, padx=20)
+
+        #frame para radiobuttons del defensor
+        frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        frame_defensor.pack(side="left", fill="both", expand=True, padx=10)
+
+
+        # 3. Creamos el Label de la Vista Previa (EL CENTRO)
+        frame_previa = tk.Frame(frame_opciones, bg="#121214")
+        frame_previa.pack(side="left", fill="both", padx=10)
+        
+        tk.Label(frame_previa, text="Vista Previa", fg="white", bg="#121214").pack()
+        self.label_preview = tk.Label(frame_previa, bg="#000000", borderwidth=2, relief="groove")
+        self.label_preview.pack(pady=10)
+
+        #frame para radiobuttons atacante
+        
+        frame_atacante = tk.LabelFrame(frame_opciones, text=f" ⚔️ ATACANTE ({self.jugador2}) ", fg="#ff3e3e", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        frame_atacante.pack(side="right", fill="both", expand=True, padx=10)
+
+        #funcion para actualizar la imagen
+        def actualizar_previa(*args):
+            fac = self.faccion_defensor.get()
+            if fac in self.assets_ui:
+                self.label_preview.config(image=self.assets_ui[fac])
+
+
         facciones_disponibles = [
             ("Nórdica", "Nordica"),
             ("Mágica", "Magica"),
             ("Futurista", "Futuristica")
         ]
-    
-        frame_defensor = tk.LabelFrame(frame_opciones, text=f" 🛡️ DEFENSOR ({self.jugador1}) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
-        frame_defensor.pack(side="left", fill="both", expand=True, padx=10)
 
+        #botones defensor
         for texto, valor in facciones_disponibles:
             tk.Radiobutton(frame_defensor, text=texto, variable=self.faccion_defensor, value=valor,
                            bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e",
                            activeforeground="#ffffff", font=("Segoe UI", 9)).pack(anchor="w", pady=8)
         
-        frame_atacante = tk.LabelFrame(frame_opciones, text=f" ⚔️ ATACANTE ({self.jugador2}) ", fg="#ff3e3e", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
-        frame_atacante.pack(side="right", fill="both", expand=True, padx=10)
-
+        #botones atacante
         for texto, valor in facciones_disponibles:
             tk.Radiobutton(frame_atacante, text=texto, variable=self.faccion_atacante, value=valor,
                            bg="#1a1a1e", fg="#ffffff", selectcolor="#2d2d34", activebackground="#1a1a1e", activeforeground="#ffffff",
@@ -201,7 +227,8 @@ class Ventana_facciones:
         if frame_defensor == frame_atacante:
             messagebox.showerror("Conflicto de Facción", "¡Grave error comandante! El atacante y el defensor no pueden utilizar la misma facción.")
             return
-            
+        
+
         self.root.destroy()
         self.callback_inicio(frame_defensor, frame_atacante)
 
@@ -252,6 +279,7 @@ class JuegoApp:
             self.faccion_seleccionada = nombre_fac
             
             self.cargar_assets_imagenes(modo)
+            self.cargar_imagenes_ui()
         
     def cargar_assets_imagenes(self, tipo_carpeta):
         """Carga los archivos de la facción actual seleccionada incluyendo muros.
@@ -316,7 +344,21 @@ class JuegoApp:
             except Exception as e:
                 print(f"❌ Error cargando {ruta_completa}: {e}")
 
-       
+    def cargar_assets_ui(self):
+        """Carga las imágenes de vista previa usando solo tkinter."""
+        self.assets_ui = {}
+        nombres = ["Nordica", "Magica", "Futurista"]
+        
+        for nombre in nombres:
+            # Asegurate que tus archivos se llamen exactamente así en assets/interfaz/
+            ruta = f"assets/interfaz/vista_{nombre.lower()}.png"
+            try:
+                # tkinter puede cargar PNGs directamente
+                self.assets_ui[nombre] = tk.PhotoImage(file=ruta)
+            except Exception as e:
+                print(f"Error cargando {ruta}: {e}. Asegurate que sea un PNG válido.")
+
+
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${self.defensor_mgr.dinero}", fg=ACCENT_DEF)
