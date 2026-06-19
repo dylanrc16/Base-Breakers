@@ -590,7 +590,7 @@ class JuegoApp:
             self.actualizar_paneles_tienda()
             self.dibujar_escenario()
             # IMPORTANTE: Al pasar a la fase de ataque, cargamos los assets de esa facción en memoria
-            self.seleccionar_faccion(self.faccion_atacante)
+            self.seleccionar_faccion(self.faccion_atacante, "atacante")
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()
 
