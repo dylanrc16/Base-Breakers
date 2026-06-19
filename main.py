@@ -818,3 +818,4 @@ if __name__ == "__main__":
         root_fac = tk.Tk()
         app_fac = Ventana_facciones(root_fac, app_login.jugador1, app_login.jugador2, levantar_juego_principal)
         root_fac.mainloop()
+        #arreglar
