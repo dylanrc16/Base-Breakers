@@ -320,9 +320,9 @@ class JuegoApp:
        
     def actualizar_labels_oro(self):
         if self.fase_actual == "CONSTRUCCION":
-            self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${self.defensor_mgr.dinero}", fg=ACCENT_DEF)
+            self.lbl_info_ronda.config(text=f"Fase Actual: FASE DEFENSIVA ({self.faccion_defensor.upper()}) 🛡️  |  Oro Defensor: ${int(self.defensor_mgr.dinero)}", fg=ACCENT_DEF)
         elif self.fase_actual == "ATAQUE":
-            self.lbl_info_ronda.config(text=f"Fase Actual: FASE ATACANTE ({self.faccion_atacante.upper()}) ⚔️  |  Oro Atacante: ${self.atacante_mgr.dinero}", fg=ACCENT_ATK)
+            self.lbl_info_ronda.config(text=f"Fase Actual: FASE ATACANTE ({self.faccion_atacante.upper()}) ⚔️  |  Oro Atacante: ${int(self.atacante_mgr.dinero)}", fg=ACCENT_ATK)
         else:
             self.lbl_info_ronda.config(text=f"🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Facciones enfrentadas", fg="#ffaa00")
 
@@ -635,7 +635,7 @@ class JuegoApp:
         elif self.fase_actual == "ATAQUE":
             if not self.atacante_mgr.unidades_vivas: return
             self.fase_actual = "COMBATE"
-            self.tiempo_habilidades = 8
+            self.tiempo_habilidades = 5
             self.actualizar_cooldown_habilidades()
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()
@@ -812,24 +812,24 @@ class JuegoApp:
             self.rondas_ganadas_atacante += 1
             
             if self.rondas_ganadas_atacante >= 3:
-                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🔥 ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
+                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f" ¡{self.nombre_atacante} ha destruido la base 3 veces y ganó la partida completa!")
                 usuarios.registrar_victoria(self.nombre_atacante, "atacante")
                 self.root.destroy() 
                 return
             else:
-                messagebox.showinfo("Fin de Ronda", f"💥 El atacante ganó esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
+                messagebox.showinfo("Fin de Ronda", f"El atacante ganó esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
                 self.reiniciar_partida()
 
         elif not self.atacante_mgr.unidades_vivas:
             self.rondas_ganadas_defensor += 1
             
             if self.rondas_ganadas_defensor >= 3:
-                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f"🛡️ ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
+                messagebox.showinfo("¡VICTORIA ABSOLUTA!", f" ¡{self.nombre_defensor} defendió con éxito 3 rondas y ganó la partida completa!")
                 usuarios.registrar_victoria(self.nombre_defensor, "defensor")
                 self.root.destroy()
                 return
             else:
-                messagebox.showinfo("Fin de Ronda", f"🛡️ El defensor repelió el ataque en esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
+                messagebox.showinfo("Fin de Ronda", f" El defensor repelió el ataque en esta ronda.\nMarcador: Defensor {self.rondas_ganadas_defensor} - {self.rondas_ganadas_atacante} Atacante")
                 self.reiniciar_partida()
                 
         else:
