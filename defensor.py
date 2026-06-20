@@ -31,9 +31,6 @@ class Defensa:
             self.vida_actual = 0
         return self.vida_actual == 0  # Retorna True si fue destruida
 
-    def recargar_habilidad(self):
-        self.contador_turnos += 1
-
 
 # --- CLASES HIJAS (Tipos de Torres) ---
 
