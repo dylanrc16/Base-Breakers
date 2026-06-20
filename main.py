@@ -11,7 +11,7 @@ from defensor import *
 from ataque import *
 
 # Configuración de Paleta de Colores Cyberpunk
-BG_MAIN = "#121214"       
+BG_MAIN = "#121214"     
 BG_PANEL = "#1a1a1e"      
 ACCENT_DEF = "#00ffcc"    # Turquesa neón
 ACCENT_ATK = "#ff3e3e"    # Rojo neón
@@ -324,14 +324,14 @@ class JuegoApp:
         elif self.fase_actual == "ATAQUE":
             self.lbl_info_ronda.config(text=f"Fase Actual: FASE ATACANTE ({self.faccion_atacante.upper()}) ⚔️  |  Oro Atacante: ${int(self.atacante_mgr.dinero)}", fg=ACCENT_ATK)
         else:
-            self.lbl_info_ronda.config(text=f"🔥 SIMULACIÓN EN TIEMPO REAL 🔥  |  Facciones enfrentadas", fg="#ffaa00")
+            self.lbl_info_ronda.config(text=f" SIMULACIÓN EN TIEMPO REAL   |  Facciones enfrentadas", fg="#ffaa00")
 
     def crear_interfaz(self):
         # --- PANEL SUPERIOR ---
         self.panel_superior = tk.Frame(self.root, bg=BG_PANEL, height=90, highlightbackground="#2d2d34", highlightthickness=1)
         self.panel_superior.pack(fill="x", side="top", padx=15, pady=10)
         
-        lbl_titulo = tk.Label(self.panel_superior, text="⚡ CLASH OF PYTHON: SUPREME EDITION 2026 ⚡", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
+        lbl_titulo = tk.Label(self.panel_superior, text="TIQUICIA WARS", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
         lbl_titulo.pack(pady=5)
         
         self.lbl_info_ronda = tk.Label(self.panel_superior, text="", font=("Segoe UI", 12, "bold"), bg=BG_PANEL)
@@ -401,7 +401,7 @@ class JuegoApp:
 
                 except Exception as e:
 
-                    print(f"❌ Error al procesar o recortar Fondo_Mapa.png: {e}")
+                    print(f"Error al procesar o recortar Fondo_Mapa.png: {e}")
                     self.img_fondo_terreno = None
 
         if self.img_fondo_terreno:
