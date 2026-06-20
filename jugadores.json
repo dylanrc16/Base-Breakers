@@ -2,11 +2,11 @@
     "G": {
         "password": "tec",
         "victorias_defensor": 1,
-        "victorias_atacante": 0
+        "victorias_atacante": 1
     },
     "D": {
         "password": "tec",
-        "victorias_defensor": 1,
+        "victorias_defensor": 3,
         "victorias_atacante": 0
     }
 }

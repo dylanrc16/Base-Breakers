@@ -397,8 +397,6 @@ class JuegoApp:
                     self.canvas_mapa.tk.call(self.img_fondo_terreno, 'copy', img_original, 
                                              '-from', x1, y1, x2, y2, 
                                              '-to', 0, 0)
-                    
-                    print("🌲 Fondo Nórdico recortado exitosamente a 600x600 píxeles.")
 
 
                 except Exception as e:
@@ -667,6 +665,10 @@ class JuegoApp:
             return
 
         for torre in self.defensor_mgr.defensas_colocadas:
+            if not torre.habilidad_disponible:
+                continue
+            if torre.habilidad_activa:
+                continue
             torre.usar_habilidad()
             
         
