@@ -153,10 +153,9 @@ class DefensorManager:
         muro_nuevo = Muros(x, y, faccion)
 
         #misma logica que con las torres
-        
+
         if self.dinero >= muro_nuevo.costo:
             self.dinero -= muro_nuevo.costo
             self.defensas_colocadas.append(muro_nuevo)
             return muro_nuevo
         return None
-    
