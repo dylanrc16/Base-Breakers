@@ -213,6 +213,7 @@ class JuegoApp:
         self.root.title("Base Assault")
         self.root.geometry("1150x720")
         self.root.configure(bg=BG_MAIN)
+        self.root.state("zoomed")
         
         self.nombre_defensor = ""
         self.nombre_atacante = ""
