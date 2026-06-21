@@ -331,7 +331,7 @@ class JuegoApp:
         self.panel_superior = tk.Frame(self.root, bg=BG_PANEL, height=90, highlightbackground="#2d2d34", highlightthickness=1)
         self.panel_superior.pack(fill="x", side="top", padx=15, pady=10)
         
-        lbl_titulo = tk.Label(self.panel_superior, text="TIQUICIA WARS", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
+        lbl_titulo = tk.Label(self.panel_superior, text="BASE BREAKERS", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
         lbl_titulo.pack(pady=5)
         
         self.lbl_info_ronda = tk.Label(self.panel_superior, text="", font=("Segoe UI", 12, "bold"), bg=BG_PANEL)
