@@ -1,4 +1,4 @@
-# Base Assault: Cyber Evolution ⚔️🛡️
+# Base Breakers
 
 Juego de estrategia para dos jugadores desarrollado en Python con Tkinter. Un jugador asume el rol de **Defensor**, construyendo torres y muros para proteger su base central, mientras el otro juega como **Atacante**, comprando y desplegando unidades para destruirla. Gana la partida quien primero consiga 3 rondas a su favor.
 
@@ -121,12 +121,12 @@ Tiquicia-Wars/
 
 | Estructura / Unidad | Habilidad | Efecto (uso único por ronda) |
 |---|---|---|
-| Torre Básica | Disparo Doble | Restaura el 100% de su vida actual |
-| Torre Pesada | Daño en Área | Duplica su daño |
+| Torre Básica | Curación | Restaura el 100% de su vida actual |
+| Torre Pesada | Aumento de Daño | Duplica su daño |
 | Torre Mágica | Amplificación | Aumenta su alcance en 2 casillas |
 | Muro | — | No tiene habilidad activa |
 | Soldado | Escudo Temporal | Recupera el 50% de su vida máxima |
-| Tanque | Daño Extra contra Torres | Multiplica su daño x2.5 |
+| Tanque | Daño Extra | Multiplica su daño x2.5 |
 | Unidad Rápida | Aumento de Velocidad | Duplica su velocidad de movimiento |
 
 ---
@@ -147,8 +147,6 @@ Ejemplo de estructura:
 }
 ```
 
-> ⚠️ Las contraseñas se almacenan en texto plano. Este proyecto es de carácter académico y no implementa cifrado de credenciales.
-
 ---
 
 ## Notas técnicas
@@ -160,6 +158,6 @@ Ejemplo de estructura:
 
 ## Problemas conocidos / limitaciones
 
-- No hay sonido implementado (pygame no se usa en la versión actual).
+- No hay sonido implementado (pygame no se usa).
 - Las contraseñas no están cifradas.
 - Las habilidades especiales son de un solo uso por ronda y se deben activar manualmente con los botones correspondientes durante el combate.
