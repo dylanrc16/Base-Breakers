@@ -44,7 +44,7 @@ class TorreBasica(Defensa):
         # Daño normal y costo bajo
         #llamo a los metodos de la clase padre:
         super().__init__(
-            nombre="Torre Básica", costo=100, vida=300, daño=25, alcance=2,
+            nombre="Torre Básica", costo=100, vida=300, daño=20, alcance=2.5,
             habilidad="Curación", #*
             
             x=x, y=y, faccion_visual=faccion_visual
