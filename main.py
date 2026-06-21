@@ -36,7 +36,7 @@ class VentanaLogin:
         self.crear_widgets()
 
     def crear_widgets(self):
-        tk.Label(self.root, text="BASE ASSAULT SYSTEM", font=("Impact", 20), fg="#00ffcc", bg="#121214").pack(pady=20)
+        tk.Label(self.root, text="BASE BREAKERS SYSTEM", font=("Impact", 20), fg="#00ffcc", bg="#121214").pack(pady=20)
         
         # --- SECCIÓN JUGADOR 1 (DEFENSOR) ---
         frame_j1 = tk.LabelFrame(self.root, text=" JUGADOR 1 (DEFENSOR) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
@@ -129,7 +129,7 @@ class VentanaLogin:
         ventana_rank.geometry("500x350")
         ventana_rank.configure(bg="#121214")
         
-        tk.Label(ventana_rank, text="🏆 TOP 5 JUGADORES SUPREMOS 🏆", font=("Impact", 16), fg="#ffd700", bg="#121214").pack(pady=10)
+        tk.Label(ventana_rank, text="🏆 TOP 5 JUGADORES 🏆", font=("Impact", 16), fg="#ffd700", bg="#121214").pack(pady=10)
         
         split_frame = tk.Frame(ventana_rank, bg="#121214")
         split_frame.pack(fill="both", expand=True, padx=10)
@@ -156,7 +156,7 @@ class Ventana_facciones:
         self.jugador2 = jugador2
         self.callback_inicio = callback_inicio 
 
-        self.faccion_defensor = tk.StringVar(value="hola Gabo")
+        self.faccion_defensor = tk.StringVar(value="hola Gabo") #string inexistente
         self.faccion_atacante = tk.StringVar(value="hola Gabo")
 
         self.crear_widgets()
@@ -210,7 +210,7 @@ class Ventana_facciones:
 class JuegoApp:
     def __init__(self, root, faccion_defensor, faccion_atacante):
         self.root = root
-        self.root.title("Base Assault")
+        self.root.title("Base Breakers")
         self.root.geometry("1150x720")
         self.root.configure(bg=BG_MAIN)
         self.root.state("zoomed")
@@ -332,7 +332,7 @@ class JuegoApp:
         self.panel_superior = tk.Frame(self.root, bg=BG_PANEL, height=90, highlightbackground="#2d2d34", highlightthickness=1)
         self.panel_superior.pack(fill="x", side="top", padx=15, pady=10)
         
-        lbl_titulo = tk.Label(self.panel_superior, text="TIQUICIA WARS", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
+        lbl_titulo = tk.Label(self.panel_superior, text="BASE BREAKERS", font=("Impact", 18), fg="#ffffff", bg=BG_PANEL)
         lbl_titulo.pack(pady=5)
         
         self.lbl_info_ronda = tk.Label(self.panel_superior, text="", font=("Segoe UI", 12, "bold"), bg=BG_PANEL)
@@ -530,7 +530,7 @@ class JuegoApp:
                 btn.pack(fill="x", pady=6)
 
         elif self.fase_actual == "ATAQUE":
-            self.lbl_seccion.config(text="⚔️ RECRUTAR ATACANTES", fg=ACCENT_ATK)
+            self.lbl_seccion.config(text="⚔️ RECLUTAR ATACANTES", fg=ACCENT_ATK)
             self.btn_fase.config(text="INICIAR COMBATE 🔥", bg="#dc3545", fg="#ffffff")
             opciones = [("Desplegar Soldado ($80)", Soldado), ("Desplegar Tanque ($200)", Tanque), ("Unidad Rápida ($100)", UnidadRapida)]
             for texto, clase in opciones:
