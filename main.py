@@ -633,7 +633,7 @@ class JuegoApp:
         elif self.fase_actual == "ATAQUE":
             if not self.atacante_mgr.unidades_vivas: return
             self.fase_actual = "COMBATE"
-            self.tiempo_habilidades = 5
+            self.tiempo_habilidades = 3
             self.actualizar_cooldown_habilidades()
             self.actualizar_paneles_tienda()
             self.actualizar_labels_oro()

@@ -49,7 +49,7 @@ class Soldado(Unidad):
     def __init__(self, x, y, faccion_visual):
         #llama a los metodos de la clase padre
         super().__init__(
-            nombre="Soldado", costo=80, vida=150, daño=20, velocidad=1,
+            nombre="Soldado", costo=80, vida=200, daño=20, velocidad=1,
             habilidad="Escudo Temporal",
             x=x, y=y, faccion_visual=faccion_visual
         )
@@ -68,8 +68,8 @@ class Tanque(Unidad):
     def __init__(self, x, y, faccion_visual):
         #llama a los metodos de la clase padre:
         super().__init__(
-            nombre="Tanque", costo=200, vida=450, daño=40, velocidad=0.5,
-            habilidad="Daño Extra contra Torres", 
+            nombre="Tanque", costo=200, vida=600, daño=40, velocidad=0.5,
+            habilidad="Daño Extra", 
             x=x, y=y, faccion_visual=faccion_visual
         )
 
@@ -87,7 +87,7 @@ class UnidadRapida(Unidad):
     def __init__(self, x, y, faccion_visual):
         #metodos de la clase padre:
         super().__init__(
-            nombre="Unidad Rápida", costo=100, vida=100, daño=15, velocidad=2,
+            nombre="Unidad Rápida", costo=100, vida=160, daño=15, velocidad=1.5,
             habilidad="Aumento de Velocidad", 
             x=x, y=y, faccion_visual=faccion_visual
         )
