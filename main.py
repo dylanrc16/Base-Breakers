@@ -36,7 +36,7 @@ class VentanaLogin:
         self.crear_widgets()
 
     def crear_widgets(self):
-        tk.Label(self.root, text="BASE ASSAULT SYSTEM", font=("Impact", 20), fg="#00ffcc", bg="#121214").pack(pady=20)
+        tk.Label(self.root, text="BASE BREAKERS", font=("Impact", 20), fg="#00ffcc", bg="#121214").pack(pady=20)
         
         # --- SECCIÓN JUGADOR 1 (DEFENSOR) ---
         frame_j1 = tk.LabelFrame(self.root, text=" JUGADOR 1 (DEFENSOR) ", fg="#00ffcc", bg="#1a1a1e", font=("Segoe UI", 10, "bold"), padx=10, pady=10)
@@ -210,7 +210,7 @@ class Ventana_facciones:
 class JuegoApp:
     def __init__(self, root, faccion_defensor, faccion_atacante):
         self.root = root
-        self.root.title("Base Assault")
+        self.root.title("BASE BREAKERS")
         self.root.geometry("1150x720")
         self.root.configure(bg=BG_MAIN)
         
